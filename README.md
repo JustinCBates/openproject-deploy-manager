@@ -323,37 +323,29 @@ class ProberIntegration:
 
 ## Dependencies
 
-### Required Dependencies
+### Production (End Users)
 
-```toml
-dependencies = [
-    "docker>=7.0.0",        # Docker SDK
-    "jinja2>=3.1.0",        # Template rendering
-    "pyyaml>=6.0",          # Configuration parsing
-    "click>=8.1.0",         # CLI framework
-    "rich>=13.0.0",         # Terminal output
-]
-```
+**Required:**
+- `docker` - Container management
+- `docker-compose` - Container orchestration
+- `python>=3.8` - Python runtime
 
-### External Dependencies
+**Optional Features:**
+- `curl` - HTTP requests (if downloading images)
+- `openssl` - SSL certificates (if managing certificates)
+- `tar` - Archive handling (if backup/restore)
 
-- **docker-prober-utility**: Pre-deployment validation of HTTP/HTTPS endpoints
-  ```toml
-  docker-prober-utility @ git+https://github.com/JustinCBates/docker_prober_utility.git@main
-  ```
+### Development (Contributors)
 
-### Development Dependencies
+**Required:**
+- `git` - Version control
+- `python>=3.8` - Python runtime
 
-```toml
-dev-dependencies = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-docker>=1.0.0",  # Docker fixtures for testing
-    "black>=23.0.0",
-    "flake8>=6.0.0",
-    "mypy>=1.0.0",
-]
-```
+**Optional Tools:**
+- `pytest` - Testing (if adding tests)
+- `black` - Code formatting (if formatting code)
+- `shellcheck` - Shell script validation (if using shell scripts)
+
 
 ## Development
 
