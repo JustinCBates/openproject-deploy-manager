@@ -19,7 +19,7 @@ This directory contains all control flow related files for the **deploy-manager*
 ### For Deployment Development
 ```bash
 # Analyze current deployment flows
-cd control_flows
+cd design_specs
 python analyze_control_flows.py
 
 # Apply planned deployment changes
