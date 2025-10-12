@@ -56,14 +56,17 @@ else:
 ### Command Line Interface
 
 ```bash
-# Deploy stack
+# Deploy stack using .cfg file from Configuration Manager
+deploy-manager deploy --config=interactive_config.cfg
+
+# Alternative: Deploy using .env file
 deploy-manager deploy --config=.env
 
 # Dry run (validation only)
-deploy-manager deploy --dry-run
+deploy-manager deploy --dry-run --config=interactive_config.cfg
 
 # Deploy without prober preflight
-deploy-manager deploy --no-prober
+deploy-manager deploy --no-prober --config=interactive_config.cfg
 
 # Check deployment status
 deploy-manager status
@@ -77,20 +80,23 @@ deploy-manager rollback
 ### Control Flow
 
 ```
-Configuration Input
+Configuration Input (.cfg file from Configuration Manager)
     ↓
 Pre-deployment Validation
+    ├─ Load and parse .cfg configuration file
     ├─ Validate configuration completeness
-    ├─ Check Docker daemon
+    ├─ Check Docker daemon accessibility
     ├─ Verify port availability
     └─ Run prober preflight check (optional)
     ↓
 Template Rendering
+    ├─ Extract template variables from .cfg
     ├─ Render Jinja2 templates (Caddyfile, nginx.conf, etc.)
-    └─ Validate rendered output
+    └─ Validate rendered output syntax
     ↓
 Deployment Execution
     ├─ Create deployment snapshot (for rollback)
+    ├─ Convert .cfg to .env for Docker Compose
     ├─ Pull images (if requested)
     ├─ docker-compose up -d
     └─ Monitor service startup
@@ -98,6 +104,7 @@ Deployment Execution
 Health Checking
     ├─ Wait for Docker health checks
     ├─ Probe HTTP/HTTPS endpoints
+```
     └─ Verify service connectivity
     ↓
 Post-deployment
@@ -107,6 +114,46 @@ Post-deployment
     ↓
 Deployment Result (Success/Failure)
 ```
+
+## Configuration Integration
+
+### Primary Input: `.cfg` File
+
+The Deploy Manager consumes the `interactive_config.cfg` file produced by the Configuration Manager:
+
+```bash
+# Example integration
+config-manager configure --interactive
+# → Generates: interactive_config.cfg
+
+deploy-manager deploy --config=interactive_config.cfg
+# → Reads configuration and deploys stack
+```
+
+### Configuration Loading Process
+
+```python
+class ConfigurationLoader:
+    def load_cfg_file(path: Path) -> Dict[str, str]
+    def convert_to_env_format() -> Dict[str, str]
+    def extract_template_variables() -> Dict[str, Any]
+    def validate_required_keys() -> ValidationResult
+```
+
+**Configuration Processing Flow**:
+1. **Load .cfg file** → Parse bash-style key="value" pairs
+2. **Validate completeness** → Check required deployment variables
+3. **Convert formats** → Generate .env and template variables
+4. **Template rendering** → Use variables in Jinja2 templates
+
+### Key Configuration Categories
+
+From `interactive_config.cfg`:
+
+- **Core Settings**: `DOMAIN_NAME`, `OPENPROJECT_HTTPS`, `PORT`
+- **Database Config**: `DATABASE_URL`, `POSTGRES_PASSWORD`
+- **Proxy Settings**: `PROXY_TYPE`, `SSL_EMAIL`, `SECURITY_HEADERS_ENABLED`
+- **Deployment Behavior**: `PROBER_ENABLED`, `PULL_IMAGES`, `HEALTH_CHECK_TIMEOUT`
 
 ### Components
 
