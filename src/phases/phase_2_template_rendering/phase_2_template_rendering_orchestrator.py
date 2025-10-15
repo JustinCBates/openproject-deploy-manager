@@ -2,7 +2,7 @@
 """
 Template Rendering
 Sequence: 20
-Status: PLANNED
+Status: IMPLEMENTED
 
 Render deployment templates with configuration values
 """
@@ -10,6 +10,15 @@ Render deployment templates with configuration values
 from pathlib import Path
 from typing import Dict, Any
 import logging
+import sys
+
+# Add libraries to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "libraries"))
+
+from config.variable_extractor import VariableExtractor
+from config.env_generator import EnvGenerator
+from templates.jinja_renderer import JinjaRenderer
+from templates.template_validator import TemplateValidator
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +27,7 @@ class Phase2TemplateRenderingOrchestrator:
     """
     Template Rendering
     
-    Status: PLANNED
+    Status: IMPLEMENTED
     Sequence: 20
     
     Render deployment templates with configuration values
@@ -65,25 +74,38 @@ class Phase2TemplateRenderingOrchestrator:
             "messages": []
         }
         
-        # TODO: Implement phase logic
-        # Execute steps in sequence:
-        # Step 10: Extract Template Variables
-        step_result = self._step_10_extract_template_variables(context)
-        result['artifacts'].update(step_result.get('artifacts', {}))
-
-        # Step 20: Render Caddyfile
-        step_result = self._step_20_render_caddyfile(context)
-        result['artifacts'].update(step_result.get('artifacts', {}))
-
-        # Step 30: Render Docker Compose Override
-        step_result = self._step_30_render_docker_compose_override(context)
-        result['artifacts'].update(step_result.get('artifacts', {}))
-
-        # Step 40: Validate Rendered Templates
-        step_result = self._step_40_validate_rendered_templates(context)
-        result['artifacts'].update(step_result.get('artifacts', {}))
-
+        # Execute steps in sequence with error handling
+        steps = [
+            ("Step 10", self._step_10_extract_template_variables),
+            ("Step 20", self._step_20_render_caddyfile),
+            ("Step 30", self._step_30_render_docker_compose_override),
+            ("Step 40", self._step_40_validate_rendered_templates),
+        ]
         
+        for step_name, step_func in steps:
+            step_result = step_func(context)
+            
+            # Update context with artifacts for next steps
+            context.update(step_result.get('artifacts', {}))
+            
+            # Update result artifacts
+            result['artifacts'].update(step_result.get('artifacts', {}))
+            
+            # Collect messages
+            result['messages'].extend(step_result.get('messages', []))
+            
+            # Check step status
+            step_status = step_result.get('status', 'success')
+            
+            if step_status == 'error':
+                logger.error(f"  ❌ {step_name} failed - aborting phase")
+                result['status'] = 'error'
+                return result
+            elif step_status == 'warning' and result['status'] == 'success':
+                # Downgrade to warning but continue
+                result['status'] = 'warning'
+        
+        logger.info(f"✅ {self.PHASE_NAME} complete (status: {result['status']})")
         return result
     
 
@@ -92,86 +114,322 @@ class Phase2TemplateRenderingOrchestrator:
         Step 10: Extract Template Variables
         
         Extract and prepare variables for template rendering
-        # Required units: config.variable_extractor
-        # TODO: Import and use these units
         """
         logger.info(f"  Step 10: Extract Template Variables")
         
-        # TODO: Implement step logic
-        
-        return {
-            "status": "success",
-            "artifacts": {},
-            "messages": []
-        }
+        try:
+            # Get validated config from context (from Phase 1)
+            config = context.get('validated_config') or context.get('loaded_config') or self.config
+            
+            if not config:
+                logger.warning("No configuration available for variable extraction")
+                return {
+                    "status": "warning",
+                    "artifacts": {
+                        "template_variables": {},
+                        "config": {}
+                    },
+                    "messages": ["No configuration available, using empty variables"]
+                }
+            
+            # Extract and flatten variables
+            extractor = VariableExtractor()
+            variables = extractor.extract(config)
+            
+            # Add any template_vars from config directly
+            if 'template_vars' in config:
+                variables.update(config['template_vars'])
+            
+            # ALSO include the full config for templates that need nested structure
+            # Templates can use either flattened vars OR access config.services etc.
+            variables['config'] = config
+            
+            # Add top-level keys directly for convenience
+            for key in ['project_name', 'environment', 'services', 'network', 'volumes']:
+                if key in config:
+                    variables[key] = config[key]
+            
+            logger.info(f"✅ Extracted {len(variables)} template variables")
+            
+            return {
+                "status": "success",
+                "artifacts": {
+                    "template_variables": variables,
+                    "config": config
+                },
+                "messages": [f"Extracted {len(variables)} template variables"]
+            }
+            
+        except Exception as e:
+            logger.error(f"  ❌ Failed to extract template variables: {str(e)}")
+            return {
+                "status": "error",
+                "artifacts": {},
+                "messages": [f"Failed to extract template variables: {str(e)}"]
+            }
 
     def _step_20_render_caddyfile(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Step 20: Render Caddyfile
         
         Render Caddyfile template for reverse proxy
-        # Required units: templates.jinja_renderer, templates.template_filters
-        # TODO: Import and use these units
         """
         logger.info(f"  Step 20: Render Caddyfile")
         
-        # TODO: Implement step logic
-        
-        return {
-            "status": "success",
-            "artifacts": {},
-            "messages": []
-        }
+        try:
+            # Get template variables from context
+            variables = context.get('template_variables', {})
+            
+            # Define Caddyfile template path (check multiple locations)
+            template_locations = [
+                self.project_root.parent / "templates" / "Caddyfile.j2",
+                self.project_root / "templates" / "Caddyfile.j2",
+                self.phase_dir / "templates" / "Caddyfile.j2"
+            ]
+            
+            template_path = None
+            for location in template_locations:
+                if location.exists():
+                    template_path = location
+                    break
+            
+            if not template_path:
+                logger.info("  ⚠️  Caddyfile template not found, skipping")
+                return {
+                    "status": "success",
+                    "artifacts": {},
+                    "messages": ["Caddyfile template not found, skipped"]
+                }
+            
+            # Render template
+            renderer = JinjaRenderer()
+            output_path = self.outputs_dir / "Caddyfile"
+            renderer.render_to_file(str(template_path), output_path, variables)
+            
+            # Read rendered content
+            rendered_content = output_path.read_text()
+            
+            logger.info(f"  ✅ Rendered Caddyfile to {output_path}")
+            
+            return {
+                "status": "success",
+                "artifacts": {
+                    "caddyfile_path": str(output_path),
+                    "caddyfile_content": rendered_content
+                },
+                "messages": [f"Rendered Caddyfile ({len(rendered_content)} bytes)"]
+            }
+            
+        except Exception as e:
+            logger.error(f"  ❌ Failed to render Caddyfile: {str(e)}")
+            return {
+                "status": "error",
+                "artifacts": {},
+                "messages": [f"Failed to render Caddyfile: {str(e)}"]
+            }
 
     def _step_30_render_docker_compose_override(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Step 30: Render Docker Compose Override
         
         Render docker-compose.override.yml with dynamic settings
-        # Required units: templates.jinja_renderer
-        # TODO: Import and use these units
         """
         logger.info(f"  Step 30: Render Docker Compose Override")
         
-        # TODO: Implement step logic
-        
-        return {
-            "status": "success",
-            "artifacts": {},
-            "messages": []
-        }
+        try:
+            # Get template variables from context
+            variables = context.get('template_variables', {})
+            
+            # Define docker-compose override template path
+            template_locations = [
+                self.project_root.parent / "templates" / "docker-compose.override.yml.j2",
+                self.project_root / "templates" / "docker-compose.override.yml.j2",
+                self.phase_dir / "templates" / "docker-compose.override.yml.j2"
+            ]
+            
+            template_path = None
+            for location in template_locations:
+                if location.exists():
+                    template_path = location
+                    break
+            
+            if not template_path:
+                logger.info("  ⚠️  Docker Compose override template not found, skipping")
+                return {
+                    "status": "success",
+                    "artifacts": {},
+                    "messages": ["Docker Compose override template not found, skipped"]
+                }
+            
+            # Render template
+            renderer = JinjaRenderer()
+            output_path = self.outputs_dir / "docker-compose.override.yml"
+            renderer.render_to_file(str(template_path), output_path, variables)
+            
+            # Read rendered content
+            rendered_content = output_path.read_text()
+            
+            logger.info(f"  ✅ Rendered docker-compose.override.yml to {output_path}")
+            
+            return {
+                "status": "success",
+                "artifacts": {
+                    "compose_override_path": str(output_path),
+                    "compose_override_content": rendered_content
+                },
+                "messages": [f"Rendered docker-compose.override.yml ({len(rendered_content)} bytes)"]
+            }
+            
+        except Exception as e:
+            logger.error(f"  ❌ Failed to render Docker Compose override: {str(e)}")
+            return {
+                "status": "error",
+                "artifacts": {},
+                "messages": [f"Failed to render Docker Compose override: {str(e)}"]
+            }
 
     def _step_40_validate_rendered_templates(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Step 40: Validate Rendered Templates
         
         Validate syntax and completeness of rendered templates
-        # Required units: templates.template_validator
-        # TODO: Import and use these units
         """
         logger.info(f"  Step 40: Validate Rendered Templates")
         
-        # TODO: Implement step logic
-        
-        return {
-            "status": "success",
-            "artifacts": {},
-            "messages": []
-        }
+        try:
+            validator = TemplateValidator()
+            validation_results = []
+            all_valid = True
+            
+            # Validate Caddyfile if rendered
+            if 'caddyfile_content' in context:
+                caddyfile_result = validator.validate(
+                    context['caddyfile_content'],
+                    type='caddyfile'
+                )
+                validation_results.append(("Caddyfile", caddyfile_result))
+                if not caddyfile_result.valid:
+                    all_valid = False
+                    logger.warning(f"  ⚠️  Caddyfile validation issues: {caddyfile_result.errors}")
+                else:
+                    logger.info(f"  ✅ Caddyfile validated")
+            
+            # Validate Docker Compose override if rendered
+            if 'compose_override_content' in context:
+                compose_result = validator.validate(
+                    context['compose_override_content'],
+                    type='docker-compose'
+                )
+                validation_results.append(("docker-compose.override.yml", compose_result))
+                if not compose_result.valid:
+                    all_valid = False
+                    logger.warning(f"  ⚠️  Docker Compose validation issues: {compose_result.errors}")
+                else:
+                    logger.info(f"  ✅ docker-compose.override.yml validated")
+            
+            if not validation_results:
+                logger.info("  ℹ️  No templates to validate")
+                return {
+                    "status": "success",
+                    "artifacts": {},
+                    "messages": ["No templates rendered to validate"]
+                }
+            
+            # Prepare messages
+            messages = []
+            for name, result in validation_results:
+                if result.valid:
+                    messages.append(f"{name}: valid")
+                else:
+                    messages.append(f"{name}: {len(result.errors)} errors")
+                    messages.extend([f"  - {err}" for err in result.errors])
+            
+            if all_valid:
+                logger.info(f"  ✅ All {len(validation_results)} templates validated successfully")
+                status = "success"
+            else:
+                logger.warning(f"  ⚠️  Some templates have validation issues")
+                status = "warning"
+            
+            return {
+                "status": status,
+                "artifacts": {
+                    "validation_results": validation_results,
+                    "all_templates_valid": all_valid
+                },
+                "messages": messages
+            }
+            
+        except Exception as e:
+            logger.error(f"  ❌ Failed to validate templates: {str(e)}")
+            return {
+                "status": "error",
+                "artifacts": {},
+                "messages": [f"Failed to validate templates: {str(e)}"]
+            }
 
 
 def main():
     """Test the phase orchestrator."""
     from pathlib import Path
+    import logging
+    
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(message)s'
+    )
     
     project_root = Path(__file__).parent.parent.parent
+    
+    # Test with sample config (simulate Phase 1 context)
+    config_path = project_root.parent / "test_config.yaml"
+    
+    # Load test config to simulate Phase 1 output
+    if config_path.exists():
+        sys.path.insert(0, str(project_root / "libraries"))
+        from config.config_loader import ConfigLoader
+        loader = ConfigLoader()
+        loaded_config = loader.load(config_path)
+    else:
+        loaded_config = {
+            "project_name": "test-deployment",
+            "environment": "development",
+            "services": {"web": {"port": 8080}}
+        }
+    
     config = {}
-    context = {}
+    context = {
+        "validated_config": loaded_config,
+        "loaded_config": loaded_config
+    }
+    
+    print(f"Testing Phase 2 Template Rendering Orchestrator")
+    print(f"Config loaded: {len(loaded_config)} keys")
+    print("=" * 70)
     
     orchestrator = Phase2TemplateRenderingOrchestrator(project_root, config)
     result = orchestrator.execute(context)
     
-    print(f"Phase result: {result}")
+    print("=" * 70)
+    print(f"Phase Status: {result['status']}")
+    print(f"Messages: {len(result.get('messages', []))}")
+    print(f"Artifacts: {list(result.get('artifacts', {}).keys())}")
+    
+    if result['status'] == 'error':
+        print("\n❌ Phase failed with errors:")
+        for msg in result.get('messages', []):
+            print(f"  - {msg}")
+    elif result['status'] == 'warning':
+        print("\n⚠️  Phase completed with warnings:")
+        for msg in result.get('messages', []):
+            print(f"  - {msg}")
+    else:
+        print("\n✅ Phase completed successfully!")
+        if result.get('messages'):
+            for msg in result.get('messages', []):
+                print(f"  - {msg}")
+
 
 
 if __name__ == '__main__':

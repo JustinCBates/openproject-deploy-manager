@@ -1,0 +1,24 @@
+# Caddyfile for {{ project_name }}
+# Environment: {{ environment }}
+
+{% if domain is defined %}
+{{ domain }} {
+    reverse_proxy localhost:{{ services.web.port | default(8080) }}
+    
+    {% if ssl_enabled %}
+    tls {
+        protocols tls1.2 tls1.3
+    }
+    {% endif %}
+    
+    encode gzip
+    
+    log {
+        output file /var/log/caddy/{{ project_name }}.log
+    }
+}
+{% else %}
+:{{ services.web.port | default(8080) }} {
+    reverse_proxy localhost:{{ services.api.port | default(5000) }}
+}
+{% endif %}
