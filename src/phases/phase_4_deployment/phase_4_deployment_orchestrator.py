@@ -287,6 +287,11 @@ class Phase4DeploymentOrchestrator:
                     "messages": ["No rendered_docker_compose found in context"]
                 }
             
+            # Convert to absolute path to avoid path issues
+            compose_path = Path(rendered_compose)
+            if not compose_path.is_absolute():
+                compose_path = self.project_root / compose_path
+            
             # Get validated config for project name
             validated_config = context.get('validated_config')
             project_name = validated_config.get('project_name', 'myproject') if validated_config else 'myproject'
@@ -294,11 +299,11 @@ class Phase4DeploymentOrchestrator:
             # Get environment file path
             env_file = context.get('env_file_path')
             
-            # Initialize compose executor with config
+            # Initialize compose executor with config (use absolute paths)
             executor_config = {
-                'compose_file': rendered_compose,
+                'compose_file': str(compose_path),
                 'project_name': project_name,
-                'working_dir': str(Path(rendered_compose).parent)
+                'working_dir': str(compose_path.parent)
             }
             executor = ComposeExecutor(executor_config)
             
