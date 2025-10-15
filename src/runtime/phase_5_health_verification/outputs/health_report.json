@@ -1,0 +1,20 @@
+{
+  "containers": {
+    "total": 0,
+    "healthy": 0,
+    "unhealthy": 0,
+    "all_healthy": true
+  },
+  "endpoints": {
+    "total": 1,
+    "successful": 0,
+    "failed": 1,
+    "all_healthy": false
+  },
+  "database": {
+    "all_healthy": true
+  },
+  "connectivity": {
+    "all_healthy": true
+  }
+}
