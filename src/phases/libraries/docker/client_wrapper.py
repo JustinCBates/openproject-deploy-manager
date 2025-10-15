@@ -26,7 +26,7 @@ class ClientWrapper:
         """
         self.config = config or {}
 
-    def is_daemon_running() -> bool:
+    def is_daemon_running(self) -> bool:
         """
         Is Daemon Running
         
@@ -34,7 +34,7 @@ class ClientWrapper:
         """
         raise NotImplementedError("TODO: Implement is_daemon_running")
 
-    def get_container_status(name: str) -> Status:
+    def get_container_status(self, name: str) -> Dict[str, Any]:
         """
         Get Container Status
         

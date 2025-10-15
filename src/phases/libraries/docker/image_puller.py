@@ -26,7 +26,7 @@ class ImagePuller:
         """
         self.config = config or {}
 
-    def pull(image: str) -> PullResult:
+    def pull(self, image: str) -> Dict[str, Any]:
         """
         Pull
         

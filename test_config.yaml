@@ -1,0 +1,43 @@
+# Test configuration for deploy-manager Phase 1 testing
+project_name: test-deployment
+environment: development
+
+# Services configuration
+services:
+  web:
+    image: nginx:latest
+    port: 8080
+    env:
+      LOG_LEVEL: info
+  
+  api:
+    image: python:3.11
+    port: 5000
+    env:
+      DEBUG: "true"
+      DATABASE_URL: postgresql://localhost/testdb
+
+# Network configuration
+network:
+  mode: bridge
+  name: test-network
+
+# Volume configuration
+volumes:
+  - name: web-data
+    path: /var/www/html
+  - name: api-logs
+    path: /var/log/api
+
+# Deployment settings
+deployment:
+  strategy: rolling
+  timeout: 300
+  health_check_retries: 5
+  health_check_interval: 10
+
+# Template variables
+template_vars:
+  app_version: "1.0.0"
+  domain: "test.example.com"
+  ssl_enabled: false

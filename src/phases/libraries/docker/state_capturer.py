@@ -26,7 +26,7 @@ class StateCapturer:
         """
         self.config = config or {}
 
-    def capture() -> ContainerStates:
+    def capture(self) -> Dict[str, Any]:
         """
         Capture
         

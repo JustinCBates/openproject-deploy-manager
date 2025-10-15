@@ -26,7 +26,7 @@ class ComposeExecutor:
         """
         self.config = config or {}
 
-    def execute(command: str) -> ExecutionResult:
+    def execute(self, command: str) -> Dict[str, Any]:
         """
         Execute
         

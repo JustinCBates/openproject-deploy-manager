@@ -26,7 +26,7 @@ class StartupMonitor:
         """
         self.config = config or {}
 
-    def monitor(timeout: int) -> MonitorResult:
+    def monitor(self, timeout: int) -> Dict[str, Any]:
         """
         Monitor
         
