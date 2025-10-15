@@ -1,0 +1,33 @@
+# Docker Compose Override for test-deployment
+# Auto-generated from template
+version: '3.8'
+
+services:
+
+  web:
+    environment:
+      - PROJECT_NAME=test-deployment
+      - ENVIRONMENT=development
+
+
+    ports:
+      - "8080:8080"
+
+
+  redis:
+    environment:
+      - PROJECT_NAME=test-deployment
+      - ENVIRONMENT=development
+
+
+    ports:
+      - "6379:6379"
+
+
+
+
+networks:
+  default:
+    name: testnet
+    driver: bridge
+

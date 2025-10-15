@@ -1,0 +1,43 @@
+# Docker Compose Override for test-deployment
+# Auto-generated from template
+version: '3.8'
+
+services:
+
+  web:
+    environment:
+      - PROJECT_NAME=test-deployment
+      - ENVIRONMENT=development
+
+
+      - LOG_LEVEL=info
+
+
+
+    ports:
+      - "8080:8080"
+
+
+  api:
+    environment:
+      - PROJECT_NAME=test-deployment
+      - ENVIRONMENT=development
+
+
+      - DEBUG=true
+
+      - DATABASE_URL=postgresql://localhost/testdb
+
+
+
+    ports:
+      - "5000:5000"
+
+
+
+
+networks:
+  default:
+    name: test-network
+    driver: bridge
+
