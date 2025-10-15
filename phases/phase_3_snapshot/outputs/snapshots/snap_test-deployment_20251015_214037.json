@@ -1,0 +1,20 @@
+{
+  "id": "snap_test-deployment_20251015_214037",
+  "timestamp": "2025-10-15T21:40:37.239695",
+  "project_name": "test-deployment",
+  "containers": [],
+  "networks": [],
+  "volumes": [],
+  "config_files": [
+    "/opt/openproject/external/deploy-manager/phases/phase_3_snapshot/outputs/config_backup_20251015_214037/test-config.yml",
+    "/opt/openproject/external/deploy-manager/phases/phase_3_snapshot/outputs/config_backup_20251015_214037/test-compose.yml"
+  ],
+  "backup_dir": "/opt/openproject/external/deploy-manager/phases/phase_3_snapshot/outputs/config_backup_20251015_214037",
+  "metadata": {
+    "phase": "pre-deployment",
+    "container_count": 0,
+    "network_count": 0,
+    "volume_count": 0,
+    "config_file_count": 2
+  }
+}

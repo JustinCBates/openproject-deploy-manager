@@ -1,0 +1,6 @@
+# Backup Manifest
+# Created: 2025-10-15T21:40:37.239524
+# Files: 2
+
+/opt/openproject/external/deploy-manager/phases/phase_3_snapshot/outputs/config_backup_20251015_214037/test-config.yml
+/opt/openproject/external/deploy-manager/phases/phase_3_snapshot/outputs/config_backup_20251015_214037/test-compose.yml
