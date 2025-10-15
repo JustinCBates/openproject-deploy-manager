@@ -4,10 +4,17 @@ Custom scaffolder for deploy-manager control_flows.yml format.
 
 Our spec has phases as top-level dict (not under flows), so we need
 a custom scaffolder to handle this structure.
+
+Features:
+- Configurable output directory (e.g., src/phases)
+- Creates global orchestrator (phases_orchestrator.py)
+- Supports dry run mode
+- Clean regeneration (delete and re-run)
 """
 
 import sys
 import yaml
+import argparse
 from pathlib import Path
 from typing import Dict, List, Any
 
@@ -19,7 +26,7 @@ def load_spec(spec_file: Path) -> Dict[str, Any]:
 
 
 def create_phase_structure(
-    project_root: Path,
+    phases_base_dir: Path,
     phase_id: str,
     phase_data: Dict[str, Any],
     dry_run: bool = False
@@ -34,7 +41,7 @@ def create_phase_structure(
     outputs_dir = phase_data.get('outputs', {}).get('directory', f'outputs/{phase_id}')
     
     # Phase directory
-    phase_dir = project_root / "phases" / phase_id
+    phase_dir = phases_base_dir / phase_id
     
     result = {
         'directories': [phase_dir],
@@ -219,13 +226,13 @@ __all__ = ['{to_class_name(phase_id)}Orchestrator']
 
 
 def create_libraries_structure(
-    project_root: Path,
+    phases_base_dir: Path,
     libraries: Dict[str, Any],
     dry_run: bool = False
 ) -> Dict[str, List[Path]]:
     """Create library structure."""
     
-    libraries_dir = project_root / "phases" / "libraries"
+    libraries_dir = phases_base_dir / "libraries"
     
     result = {
         'directories': [libraries_dir],
@@ -505,21 +512,295 @@ def generate_outputs_readme(outputs: Dict[str, Any]) -> str:
     return '\n'.join(lines)
 
 
+def create_global_orchestrator(
+    phases_base_dir: Path,
+    spec: Dict[str, Any],
+    dry_run: bool = False
+) -> Path:
+    """Create the global phases orchestrator."""
+    
+    orchestrator_file = phases_base_dir / "phases_orchestrator.py"
+    
+    component = spec.get('component', {})
+    component_name = component.get('name', 'component')
+    phases = spec.get('phases', {})
+    
+    # Sort phases by sequence
+    sorted_phases = sorted(phases.items(), key=lambda x: x[1].get('sequence', 0))
+    
+    # Generate imports
+    imports = []
+    for phase_id, phase_data in sorted_phases:
+        class_name = to_class_name(phase_id) + "Orchestrator"
+        imports.append(f"from .{phase_id}.{phase_id}_orchestrator import {class_name}")
+    
+    imports_code = '\n'.join(imports)
+    
+    # Generate phase initialization
+    phase_inits = []
+    for phase_id, phase_data in sorted_phases:
+        class_name = to_class_name(phase_id) + "Orchestrator"
+        phase_inits.append(f"        self.{phase_id} = {class_name}(project_root, config)")
+    
+    phase_inits_code = '\n'.join(phase_inits)
+    
+    # Generate phase execution
+    phase_executions = []
+    for phase_id, phase_data in sorted_phases:
+        sequence = phase_data.get('sequence', 0)
+        name = phase_data.get('name', 'Unnamed')
+        phase_executions.append(f'''
+        # Phase {sequence}: {name}
+        logger.info(f"Executing Phase {sequence}: {name}")
+        phase_result = self.{phase_id}.execute(context)
+        
+        if phase_result.get("status") != "success":
+            logger.error(f"Phase {sequence} failed: {{phase_result.get('messages')}}")
+            return {{
+                "status": "failed",
+                "failed_phase": "{phase_id}",
+                "result": phase_result
+            }}
+        
+        context.update(phase_result.get("artifacts", {{}}))
+        results["{phase_id}"] = phase_result''')
+    
+    phase_executions_code = '\n'.join(phase_executions)
+    
+    orchestrator_content = f'''#!/usr/bin/env python3
+"""
+Global Phases Orchestrator for {component_name}
+
+This orchestrator coordinates all deployment phases in sequence.
+"""
+
+from pathlib import Path
+from typing import Dict, Any, List
+import logging
+
+{imports_code}
+
+logger = logging.getLogger(__name__)
+
+
+class PhasesOrchestrator:
+    """
+    Global orchestrator for all deployment phases.
+    
+    Coordinates execution of all phases in the correct sequence,
+    handles errors, and manages the deployment context.
+    """
+    
+    def __init__(self, project_root: Path, config: Dict[str, Any]):
+        """
+        Initialize global orchestrator.
+        
+        Args:
+            project_root: Root directory of the project
+            config: Configuration dictionary
+        """
+        self.project_root = project_root
+        self.config = config
+        
+        # Initialize all phase orchestrators
+{phase_inits_code}
+    
+    def execute_main_deployment_flow(self, initial_context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Execute the main deployment flow (all phases in sequence).
+        
+        Args:
+            initial_context: Initial context/configuration
+            
+        Returns:
+            Dict with deployment results
+        """
+        logger.info("=" * 70)
+        logger.info("MAIN DEPLOYMENT FLOW")
+        logger.info("=" * 70)
+        
+        context = initial_context or {{}}
+        results = {{}}
+        
+        try:
+{phase_executions_code}
+            
+            logger.info("=" * 70)
+            logger.info("✅ DEPLOYMENT SUCCESSFUL")
+            logger.info("=" * 70)
+            
+            return {{
+                "status": "success",
+                "phases": results,
+                "context": context
+            }}
+            
+        except Exception as e:
+            logger.error(f"Deployment failed with exception: {{e}}")
+            import traceback
+            traceback.print_exc()
+            
+            return {{
+                "status": "error",
+                "error": str(e),
+                "phases": results
+            }}
+    
+    def execute_rollback_flow(self, snapshot_id: str) -> Dict[str, Any]:
+        """
+        Execute rollback to a previous snapshot.
+        
+        Args:
+            snapshot_id: ID of snapshot to rollback to
+            
+        Returns:
+            Dict with rollback results
+        """
+        logger.info("=" * 70)
+        logger.info(f"ROLLBACK FLOW - Snapshot: {{snapshot_id}}")
+        logger.info("=" * 70)
+        
+        # TODO: Implement rollback logic
+        # 1. Stop current deployment
+        # 2. Restore snapshot configuration
+        # 3. Restart services with previous config
+        # 4. Verify rollback success
+        
+        return {{
+            "status": "not_implemented",
+            "message": "Rollback flow not yet implemented"
+        }}
+    
+    def execute_validation_only_flow(self) -> Dict[str, Any]:
+        """
+        Execute validation only (no deployment).
+        
+        Returns:
+            Dict with validation results
+        """
+        logger.info("=" * 70)
+        logger.info("VALIDATION ONLY FLOW")
+        logger.info("=" * 70)
+        
+        context = {{}}
+        results = {{}}
+        
+        # Execute Phase 1: Preflight Validation
+        logger.info("Executing Phase 1: Preflight Validation")
+        phase_result = self.phase_1_preflight.execute(context)
+        results["phase_1_preflight"] = phase_result
+        
+        # Execute Phase 2: Template Rendering
+        logger.info("Executing Phase 2: Template Rendering")
+        phase_result = self.phase_2_template_rendering.execute(context)
+        results["phase_2_template_rendering"] = phase_result
+        
+        logger.info("=" * 70)
+        logger.info("✅ VALIDATION COMPLETE")
+        logger.info("=" * 70)
+        
+        return {{
+            "status": "success",
+            "validation": results
+        }}
+
+
+def main():
+    """Test the global orchestrator."""
+    import sys
+    
+    project_root = Path(__file__).parent.parent
+    config = {{}}
+    
+    orchestrator = PhasesOrchestrator(project_root, config)
+    
+    # Test main deployment flow
+    result = orchestrator.execute_main_deployment_flow()
+    
+    print(f"\\nDeployment result: {{result['status']}}")
+    if result['status'] == 'success':
+        print(f"Phases executed: {{list(result['phases'].keys())}}")
+    else:
+        print(f"Failed at: {{result.get('failed_phase', 'unknown')}}")
+
+
+if __name__ == '__main__':
+    main()
+'''
+    
+    if not dry_run:
+        orchestrator_file.write_text(orchestrator_content)
+        print(f"✅ Created file: {orchestrator_file}")
+    else:
+        print(f"   Would create: {orchestrator_file}")
+    
+    return orchestrator_file
+
+
 def main():
     """Run the custom scaffolder."""
+    parser = argparse.ArgumentParser(
+        description="Generate deploy-manager directory structure from control_flows.yml",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Generate in default location (phases/)
+  %(prog)s
+  
+  # Generate in custom location (src/phases/)
+  %(prog)s --output-dir src/phases
+  
+  # Dry run to preview what will be created
+  %(prog)s --dry-run
+  
+  # Force overwrite existing files
+  %(prog)s --force
+        """
+    )
+    parser.add_argument(
+        '--output-dir',
+        type=str,
+        default='phases',
+        help='Output directory for phases (default: phases/)'
+    )
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Show what would be created without creating files'
+    )
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help='Overwrite existing files (use with caution)'
+    )
+    
+    args = parser.parse_args()
+    
     project_root = Path(__file__).parent.parent
     spec_file = project_root / "design_specs" / "control_flows.yml"
+    phases_base_dir = project_root / args.output_dir
     
     print("\n" + "=" * 70)
     print("  Deploy-Manager Custom Scaffolder")
     print("=" * 70)
     print(f"  Spec file: {spec_file}")
-    print(f"  Output directory: {project_root}")
+    print(f"  Output directory: {phases_base_dir}")
+    print(f"  Dry run: {args.dry_run}")
+    print(f"  Force overwrite: {args.force}")
     print("=" * 70 + "\n")
     
     if not spec_file.exists():
         print(f"❌ Error: Specification file not found: {spec_file}")
         sys.exit(1)
+    
+    # Check if output directory exists and warn if force not specified
+    if phases_base_dir.exists() and not args.force and not args.dry_run:
+        print(f"⚠️  Warning: Output directory already exists: {phases_base_dir}")
+        print(f"    Use --force to overwrite or delete manually and re-run")
+        response = input("\nProceed anyway? (yes/no): ").strip().lower()
+        if response not in ['yes', 'y']:
+            print("\n⚠️  Scaffolding cancelled by user.")
+            sys.exit(0)
     
     # Load spec
     spec = load_spec(spec_file)
@@ -529,63 +810,53 @@ def main():
     
     print(f"📋 Found {len(phases)} phases and {len(libraries)} library domains\n")
     
-    # Dry run first
-    print("=" * 70)
-    print("DRY RUN - Preview")
-    print("=" * 70 + "\n")
+    # Dry run or preview
+    if args.dry_run:
+        print("=" * 70)
+        print("DRY RUN - Preview")
+        print("=" * 70 + "\n")
     
     total_dirs = 0
     total_files = 0
     
-    # Preview phases
+    # Preview/Create phases
     print("Phases:")
     for phase_id, phase_data in sorted(phases.items(), key=lambda x: x[1].get('sequence', 0)):
-        result = create_phase_structure(project_root, phase_id, phase_data, dry_run=True)
+        result = create_phase_structure(phases_base_dir, phase_id, phase_data, dry_run=args.dry_run)
         total_dirs += len(result['directories'])
         total_files += len(result['files'])
         print()
     
-    # Preview libraries
-    print("\nLibraries:")
-    result = create_libraries_structure(project_root, libraries, dry_run=True)
+    # Preview/Create libraries
+    print("Libraries:")
+    result = create_libraries_structure(phases_base_dir, libraries, dry_run=args.dry_run)
     total_dirs += len(result['directories'])
     total_files += len(result['files'])
+    print()
+    
+    # Preview/Create global orchestrator
+    print("Global Orchestrator:")
+    create_global_orchestrator(phases_base_dir, spec, dry_run=args.dry_run)
+    total_files += 1
     
     print("\n" + "=" * 70)
     print(f"Summary: {total_dirs} directories, {total_files} files")
     print("=" * 70)
     
-    # Ask for confirmation
-    response = input("\nProceed with scaffolding? (yes/no): ").strip().lower()
-    
-    if response not in ['yes', 'y']:
-        print("\n⚠️  Scaffolding cancelled by user.")
+    if args.dry_run:
+        print("\n💡 Run without --dry-run to actually create the files")
         sys.exit(0)
-    
-    # Actual generation
-    print("\n" + "=" * 70)
-    print("GENERATING SCAFFOLDING")
-    print("=" * 70 + "\n")
-    
-    # Generate phases
-    print("Creating phases:")
-    for phase_id, phase_data in sorted(phases.items(), key=lambda x: x[1].get('sequence', 0)):
-        create_phase_structure(project_root, phase_id, phase_data, dry_run=False)
-        print()
-    
-    # Generate libraries
-    print("Creating libraries:")
-    create_libraries_structure(project_root, libraries, dry_run=False)
     
     print("\n" + "=" * 70)
     print("✅ SCAFFOLDING COMPLETE!")
     print("=" * 70)
     
+    print(f"\nGenerated structure in: {phases_base_dir}")
     print("\nNext steps:")
-    print("  1. Review generated structure in phases/")
-    print("  2. Implement units in phases/libraries/")
-    print("  3. Implement step logic in phase orchestrators")
-    print("  4. Create global orchestrator (phases/global_orchestrator.py)")
+    print(f"  1. Review generated structure in {args.output_dir}/")
+    print(f"  2. Implement units in {args.output_dir}/libraries/")
+    print(f"  3. Implement step logic in phase orchestrators")
+    print(f"  4. Complete global orchestrator ({args.output_dir}/phases_orchestrator.py)")
     print("  5. Create CLI wrapper (cli/deploy_cli.py)")
 
 
