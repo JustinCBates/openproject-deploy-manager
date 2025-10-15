@@ -21,6 +21,7 @@ sys.path.insert(0, str(src_dir))
 
 from phases.phases_orchestrator import PhasesOrchestrator
 from phases.libraries.snapshot.snapshot_storer import SnapshotStorer
+from phases.libraries.docker.compose_executor import ComposeExecutor
 
 # Setup logging
 logging.basicConfig(
@@ -83,7 +84,12 @@ def cli():
     is_flag=True,
     help='Skip health verification (faster, less safe)'
 )
-def deploy(config: Optional[Path], compose_file: Optional[Path], dry_run: bool, skip_health: bool):
+@click.option(
+    '--cleanup',
+    is_flag=True,
+    help='Take down the deployed test stack after deployment (runs `docker compose down`)'
+)
+def deploy(config: Optional[Path], compose_file: Optional[Path], dry_run: bool, skip_health: bool, cleanup: bool):
     """
     Deploy application with all 6 phases.
     
@@ -160,6 +166,50 @@ def deploy(config: Optional[Path], compose_file: Optional[Path], dry_run: bool, 
         click.echo(f"⚠️  Deployment completed with status: {status}")
     
     click.echo("=" * 70 + "\n")
+
+    # If user requested cleanup, and this was not a dry-run, attempt to take down the test stack
+    if cleanup and not dry_run:
+        click.echo("\n🧹 Cleanup requested: taking down the deployed test stack...\n")
+
+        # Try to find compose file and project name from inputs or results
+        compose_path = None
+        project_name = None
+
+        # Priority: explicit CLI compose_file, then config entry, then phase 4 artifacts
+        if compose_file:
+            compose_path = compose_file
+        elif 'compose_file' in config_data:
+            compose_path = Path(config_data['compose_file'])
+        else:
+            phase4 = result.get('phases', {}).get('phase_4_deployment', {})
+            artifacts = phase4.get('artifacts', {}) if isinstance(phase4, dict) else {}
+            compose_art = artifacts.get('compose_file') or (artifacts.get('compose_result') or {}).get('compose_file')
+            if compose_art:
+                compose_path = Path(compose_art)
+
+        # Project name: config -> validated_config -> phase artifacts
+        if config_data.get('project_name'):
+            project_name = config_data.get('project_name')
+        else:
+            phase4 = result.get('phases', {}).get('phase_4_deployment', {})
+            artifacts = phase4.get('artifacts', {}) if isinstance(phase4, dict) else {}
+            project_name = artifacts.get('project_name') or config_data.get('project_name')
+
+        if compose_path:
+            # Make compose path absolute relative to project root when necessary
+            compose_path = Path(compose_path)
+            if not compose_path.is_absolute():
+                compose_path = project_root / compose_path
+
+            executor = ComposeExecutor(config={'compose_file': str(compose_path), 'project_name': project_name})
+            down_result = executor.down(volumes=False, remove_orphans=True)
+
+            if down_result.success:
+                click.echo(f"✅ Cleanup complete: stopped deployment (project={project_name or 'unknown'})")
+            else:
+                click.echo(f"⚠️  Cleanup failed: {down_result.error or down_result.stderr}")
+        else:
+            click.echo("⚠️  Cleanup requested but no compose file found; skipping docker compose down")
 
 
 @cli.command()
