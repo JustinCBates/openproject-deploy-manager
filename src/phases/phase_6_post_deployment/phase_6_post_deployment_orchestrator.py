@@ -38,7 +38,7 @@ class Phase6PostDeploymentOrchestrator:
         """
         self.project_root = project_root
         self.config = config
-        self.phase_dir = project_root / "phases" / "phase_6_post_deployment"
+        self.phase_dir = project_root / "runtime" / "phase_6_post_deployment"
         self.outputs_dir = self.phase_dir / "outputs"
         
         # Ensure outputs directory exists

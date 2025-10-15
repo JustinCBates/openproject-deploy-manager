@@ -47,7 +47,7 @@ class Phase2TemplateRenderingOrchestrator:
         """
         self.project_root = project_root
         self.config = config
-        self.phase_dir = project_root / "phases" / "phase_2_template_rendering"
+        self.phase_dir = project_root / "runtime" / "phase_2_template_rendering"
         self.outputs_dir = self.phase_dir / "outputs"
         
         # Ensure outputs directory exists

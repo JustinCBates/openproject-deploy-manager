@@ -49,7 +49,7 @@ class Phase3SnapshotOrchestrator:
         """
         self.project_root = project_root
         self.config = config
-        self.phase_dir = project_root / "phases" / "phase_3_snapshot"
+        self.phase_dir = project_root / "runtime" / "phase_3_snapshot"
         self.outputs_dir = self.phase_dir / "outputs"
         
         # Ensure outputs directory exists

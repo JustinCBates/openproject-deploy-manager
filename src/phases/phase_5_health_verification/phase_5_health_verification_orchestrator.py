@@ -38,7 +38,7 @@ class Phase5HealthVerificationOrchestrator:
         """
         self.project_root = project_root
         self.config = config
-        self.phase_dir = project_root / "phases" / "phase_5_health_verification"
+        self.phase_dir = project_root / "runtime" / "phase_5_health_verification"
         self.outputs_dir = self.phase_dir / "outputs"
         
         # Ensure outputs directory exists
