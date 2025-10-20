@@ -5,8 +5,7 @@ StartupMonitor Unit
 Monitor Docker container startup with timeout and health checking
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 import logging
 import subprocess

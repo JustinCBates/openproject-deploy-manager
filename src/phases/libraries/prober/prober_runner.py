@@ -5,8 +5,7 @@ ProberRunner Unit
 Run prober preflight checks
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import logging
 
 logger = logging.getLogger(__name__)

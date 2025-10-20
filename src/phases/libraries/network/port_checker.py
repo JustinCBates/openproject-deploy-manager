@@ -5,8 +5,7 @@ PortChecker Unit
 Check port availability
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 import logging
 import socket

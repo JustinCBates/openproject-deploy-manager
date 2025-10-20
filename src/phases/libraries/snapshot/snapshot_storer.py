@@ -5,12 +5,10 @@ SnapshotStorer Unit
 Store and manage snapshots
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from dataclasses import dataclass, field, asdict
 import logging
 import json
-import datetime
 
 logger = logging.getLogger(__name__)
 

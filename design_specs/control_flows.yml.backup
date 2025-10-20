@@ -12,32 +12,32 @@ entry_points:
     status: "IMPLEMENTED"
     description: "Main deployment CLI entry point"
     calls: ["deploy", "rollback", "health", "validate", "template", "status"]
-    
+
   deploy:
     status: "IMPLEMENTED"
     description: "Run complete deployment orchestration process"
     flow_id: "main_deployment_flow"
-    
+
   rollback:
     status: "PLANNED"
     description: "Rollback to previous deployment snapshot"
     flow_id: "rollback_flow"
-    
+
   health:
     status: "IMPLEMENTED"
     description: "Check deployment health"
     flow_id: "health_check_flow"
-    
+
   validate:
     status: "IMPLEMENTED"
     description: "Validate deployment configuration"
     flow_id: "validation_flow"
-    
+
   template:
     status: "PLANNED"
     description: "Apply deployment template"
     flow_id: "template_flow"
-    
+
   status:
     status: "IMPLEMENTED"
     description: "Check deployment status"
@@ -51,35 +51,35 @@ flows:
         name: "Initialize Orchestrator"
         status: "IMPLEMENTED"
         description: "Create DeploymentOrchestrator instance"
-        
+
       - step_id: "preflight"
         name: "Preflight Validation"
         status: "IMPLEMENTED"
         description: "Run environment, system, and Docker discovery"
         sub_flows: ["discovery_flow"]
-        
+
       - step_id: "collection"
         name: "Interactive Collection"
         status: "IMPLEMENTED"
         description: "Collect user configuration via UI"
-        
+
       - step_id: "validation"
         name: "Validation Phase"
         status: "IMPLEMENTED"
         description: "Validate collected configuration"
         sub_flows: ["validation_flow"]
         decision_point: "continue_on_validation_failure"
-        
+
       - step_id: "snapshot"
         name: "Create Snapshot"
         status: "IMPLEMENTED"
         description: "Create pre-deployment snapshot"
-        
+
       - step_id: "deployment"
         name: "Execute Deployment"
         status: "IMPLEMENTED"
         description: "Run Docker Compose deployment"
-        
+
       - step_id: "verification"
         name: "Post-deployment Verification"
         status: "IMPLEMENTED"
@@ -93,17 +93,17 @@ flows:
         name: "Validate Snapshot"
         status: "PLANNED"
         description: "Ensure rollback snapshot is valid"
-        
+
       - step_id: "stop_current"
         name: "Stop Current Deployment"
         status: "PLANNED"
         description: "Gracefully stop current containers"
-        
+
       - step_id: "restore_snapshot"
         name: "Restore Snapshot"
         status: "PLANNED"
         description: "Restore from snapshot"
-        
+
       - step_id: "verify_rollback"
         name: "Verify Rollback"
         status: "PLANNED"
@@ -116,12 +116,12 @@ flows:
         name: "Check Container Status"
         status: "IMPLEMENTED"
         description: "Verify all containers are running"
-        
+
       - step_id: "service_health"
         name: "Check Service Health"
         status: "IMPLEMENTED"
         description: "Verify services are responding"
-        
+
       - step_id: "connectivity"
         name: "Check Connectivity"
         status: "IMPLEMENTED"
@@ -134,12 +134,12 @@ flows:
         name: "Configuration Validation"
         status: "IMPLEMENTED"
         description: "Validate deployment configuration"
-        
+
       - step_id: "resource_validation"
         name: "Resource Validation"
         status: "IMPLEMENTED"
         description: "Check system resources"
-        
+
       - step_id: "dependency_validation"
         name: "Dependency Validation"
         status: "IMPLEMENTED"
@@ -149,15 +149,15 @@ artifacts:
   deployment_config:
     description: "Final deployment configuration"
     format: "YAML"
-    
+
   deployment_snapshot:
     description: "Pre-deployment system snapshot"
     format: "JSON"
-    
+
   health_report:
     description: "Deployment health status report"
     format: "JSON"
-    
+
   deployment_logs:
     description: "Deployment execution logs"
     format: "Text/JSON"
@@ -167,7 +167,7 @@ decision_points:
     description: "Whether to continue deployment if validation finds issues"
     options: ["continue", "abort", "fix_and_retry"]
     default: "abort"
-    
+
   rollback_on_failure:
     description: "Whether to automatically rollback on deployment failure"
     options: ["auto_rollback", "manual", "leave_as_is"]

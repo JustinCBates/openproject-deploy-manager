@@ -6,8 +6,7 @@ Check database connectivity using TCP port testing
 (Avoids dependency on database-specific Python clients)
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
 import socket

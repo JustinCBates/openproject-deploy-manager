@@ -5,8 +5,7 @@ ContainerHealthChecker Unit
 Check Docker container health status using docker inspect
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
 import subprocess

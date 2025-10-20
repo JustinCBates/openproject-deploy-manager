@@ -5,8 +5,7 @@ ConfigConverter Unit
 Convert between configuration formats
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import logging
 
 logger = logging.getLogger(__name__)

@@ -17,7 +17,7 @@ services:
       enabled: true
       path: /
       interval: 5s
-  
+
   redis:
     image: redis:alpine
     port: 6379

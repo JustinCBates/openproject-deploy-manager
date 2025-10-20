@@ -2,7 +2,7 @@
 
 Deployment orchestration for Docker Compose stacks with health checking, rollback capabilities, and live validation.
 
-**Version**: 2.0.0  
+**Version**: 2.0.0
 **Dual-Mode Support**: Development & Production
 
 ## Features
@@ -521,14 +521,14 @@ class DeploymentOrchestrator:
     ):
         """
         Initialize Deployment Orchestrator.
-        
+
         Production Mode (paths required):
             deployer = DeploymentOrchestrator(
                 config=cfg,
                 templates_dir=Path("/opt/openproject/templates"),
                 output_dir=Path("/opt/openproject/outputs")
             )
-        
+
         Development Mode (auto-detected):
             deployer = DeploymentOrchestrator(config=cfg)
         """
@@ -540,7 +540,7 @@ class DeploymentOrchestrator:
 def render_templates(self) -> Dict[str, Any]:
     """
     Render Jinja2 templates.
-    
+
     Returns:
         Dict with:
         - status: 'success' | 'error' | 'warning'
@@ -551,7 +551,7 @@ def render_templates(self) -> Dict[str, Any]:
 def create_snapshot(self, snapshot_name: Optional[str] = None) -> Dict[str, Any]:
     """
     Create deployment snapshot.
-    
+
     Returns:
         Dict with:
         - status: 'success' | 'error'
@@ -562,7 +562,7 @@ def create_snapshot(self, snapshot_name: Optional[str] = None) -> Dict[str, Any]
 def deploy(self, dry_run: bool = False) -> Dict[str, Any]:
     """
     Execute deployment.
-    
+
     Returns:
         Dict with:
         - status: 'success' | 'error'
@@ -655,7 +655,7 @@ openproject-deploy-manager/
 server {
     listen {{ port }};
     server_name {{ domain }};
-    
+
     location / {
         proxy_pass http://backend:8080;
         proxy_set_header Host $host;

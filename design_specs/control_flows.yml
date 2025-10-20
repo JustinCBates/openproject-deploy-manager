@@ -27,7 +27,7 @@ phases:
           - "config.config_loader"
         outputs:
           - "deployment_config.yml"
-      
+
       - sequence: 20
         name: "Validate Configuration"
         description: "Validate configuration completeness and correctness"
@@ -36,7 +36,7 @@ phases:
           - "config.config_validator"
         outputs:
           - "config_validation_result.yml"
-      
+
       - sequence: 30
         name: "Check Docker Daemon"
         description: "Verify Docker daemon is accessible and running"
@@ -45,7 +45,7 @@ phases:
           - "docker.docker_checker"
         outputs:
           - "docker_status.yml"
-      
+
       - sequence: 40
         name: "Check Port Availability"
         description: "Ensure required ports are available"
@@ -54,7 +54,7 @@ phases:
           - "network.port_checker"
         outputs:
           - "port_availability.yml"
-      
+
       - sequence: 50
         name: "Run Prober Preflight"
         description: "Execute docker-prober-utility for preflight validation (optional)"
@@ -64,7 +64,7 @@ phases:
         outputs:
           - "prober_results.yml"
         conditional: true
-      
+
       - sequence: 60
         name: "Validate System Resources"
         description: "Check system has sufficient memory, disk, CPU"
@@ -73,7 +73,7 @@ phases:
           - "system.resource_checker"
         outputs:
           - "resource_check.yml"
-    
+
     outputs:
       directory: "outputs/preflight"
       files:
@@ -94,7 +94,7 @@ phases:
           - "config.variable_extractor"
         outputs:
           - "template_variables.yml"
-      
+
       - sequence: 20
         name: "Render Caddyfile"
         description: "Render Caddyfile template for reverse proxy"
@@ -104,7 +104,7 @@ phases:
           - "templates.template_filters"
         outputs:
           - "Caddyfile"
-      
+
       - sequence: 30
         name: "Render Docker Compose Override"
         description: "Render docker-compose.override.yml with dynamic settings"
@@ -113,7 +113,7 @@ phases:
           - "templates.jinja_renderer"
         outputs:
           - "docker-compose.override.yml"
-      
+
       - sequence: 40
         name: "Validate Rendered Templates"
         description: "Validate syntax and completeness of rendered templates"
@@ -122,7 +122,7 @@ phases:
           - "templates.template_validator"
         outputs:
           - "template_validation.yml"
-    
+
     outputs:
       directory: "outputs/templates"
       files:
@@ -144,7 +144,7 @@ phases:
           - "docker.state_capturer"
         outputs:
           - "container_states.json"
-      
+
       - sequence: 20
         name: "Backup Configuration Files"
         description: "Backup current configuration files"
@@ -153,7 +153,7 @@ phases:
           - "snapshot.config_backupper"
         outputs:
           - "config_backup/"
-      
+
       - sequence: 30
         name: "Store Snapshot"
         description: "Store snapshot with metadata and timestamp"
@@ -162,7 +162,7 @@ phases:
           - "snapshot.snapshot_storer"
         outputs:
           - "snapshot_metadata.json"
-    
+
     outputs:
       directory: "outputs/snapshots/<timestamp>"
       files:
@@ -184,7 +184,7 @@ phases:
           - "config.env_generator"
         outputs:
           - ".env"
-      
+
       - sequence: 20
         name: "Pull Docker Images"
         description: "Pull required Docker images (if requested)"
@@ -194,7 +194,7 @@ phases:
         outputs:
           - "image_pull_results.yml"
         conditional: true
-      
+
       - sequence: 30
         name: "Execute Compose Up"
         description: "Run docker-compose up -d to start services"
@@ -203,7 +203,7 @@ phases:
           - "docker.compose_executor"
         outputs:
           - "compose_execution.yml"
-      
+
       - sequence: 40
         name: "Monitor Service Startup"
         description: "Monitor services starting and capture initial logs"
@@ -212,7 +212,7 @@ phases:
           - "docker.startup_monitor"
         outputs:
           - "startup_logs.txt"
-    
+
     outputs:
       directory: "outputs/deployment"
       files:
@@ -234,7 +234,7 @@ phases:
           - "health.container_health_checker"
         outputs:
           - "container_health.yml"
-      
+
       - sequence: 20
         name: "Probe HTTP/HTTPS Endpoints"
         description: "Test HTTP/HTTPS endpoints are responding"
@@ -243,7 +243,7 @@ phases:
           - "health.endpoint_prober"
         outputs:
           - "endpoint_results.yml"
-      
+
       - sequence: 30
         name: "Check Database Connectivity"
         description: "Verify database is accessible and responding"
@@ -253,7 +253,7 @@ phases:
         outputs:
           - "database_health.yml"
         conditional: true
-      
+
       - sequence: 40
         name: "Test Service Connectivity"
         description: "Test inter-service connectivity and networking"
@@ -262,7 +262,7 @@ phases:
           - "health.connectivity_tester"
         outputs:
           - "connectivity_results.yml"
-    
+
     outputs:
       directory: "outputs/health"
       files:
@@ -283,7 +283,7 @@ phases:
           - "reporting.status_reporter"
         outputs:
           - "deployment_result.json"
-      
+
       - sequence: 20
         name: "Log Deployment Metadata"
         description: "Log deployment metadata for audit trail"
@@ -292,7 +292,7 @@ phases:
           - "reporting.metadata_logger"
         outputs:
           - "deployment_manifest.yml"
-      
+
       - sequence: 30
         name: "Cleanup Temporary Files"
         description: "Clean up temporary files and resources"
@@ -301,7 +301,7 @@ phases:
           - "cleanup.cleanup_handler"
         outputs:
           - "cleanup_log.txt"
-    
+
     outputs:
       directory: "outputs/final"
       files:
@@ -322,24 +322,24 @@ libraries:
         methods:
           - "load(path: Path) -> Dict"
           - "parse_yaml(content: str) -> Dict"
-      
+
       - name: "config_validator"
         description: "Validate configuration completeness"
         methods:
           - "validate(config: Dict) -> ValidationResult"
           - "check_required_keys(config: Dict) -> List[str]"
-      
+
       - name: "config_converter"
         description: "Convert between configuration formats"
         methods:
           - "to_env(config: Dict) -> str"
           - "to_yaml(config: Dict) -> str"
-      
+
       - name: "variable_extractor"
         description: "Extract template variables from config"
         methods:
           - "extract(config: Dict) -> Dict"
-      
+
       - name: "env_generator"
         description: "Generate .env file from configuration"
         methods:
@@ -354,33 +354,33 @@ libraries:
         methods:
           - "is_daemon_running() -> bool"
           - "get_container_status(name: str) -> Status"
-      
+
       - name: "compose_manager"
         description: "Docker Compose operations"
         methods:
           - "up(compose_file: Path, services: List[str])"
           - "down(remove_volumes: bool)"
-      
+
       - name: "docker_checker"
         description: "Check Docker daemon availability"
         methods:
           - "check() -> DockerStatus"
-      
+
       - name: "state_capturer"
         description: "Capture container states for snapshots"
         methods:
           - "capture() -> ContainerStates"
-      
+
       - name: "image_puller"
         description: "Pull Docker images"
         methods:
           - "pull(image: str) -> PullResult"
-      
+
       - name: "compose_executor"
         description: "Execute docker-compose commands"
         methods:
           - "execute(command: str) -> ExecutionResult"
-      
+
       - name: "startup_monitor"
         description: "Monitor container startup"
         methods:
@@ -395,14 +395,14 @@ libraries:
         methods:
           - "render(template: str, context: Dict) -> str"
           - "render_to_file(template: str, output: Path, context: Dict)"
-      
+
       - name: "template_filters"
         description: "Custom Jinja2 filters"
         methods:
           - "to_bool(value: str) -> bool"
           - "to_port(value: str) -> int"
           - "to_domain(value: str) -> str"
-      
+
       - name: "template_validator"
         description: "Validate rendered template syntax"
         methods:
@@ -417,22 +417,22 @@ libraries:
         methods:
           - "check_service(name: str) -> HealthStatus"
           - "wait_for_healthy(services: List[str], timeout: int) -> Result"
-      
+
       - name: "endpoint_prober"
         description: "Probe HTTP/HTTPS endpoints"
         methods:
           - "probe(url: str, timeout: int) -> ProbeResult"
-      
+
       - name: "container_health_checker"
         description: "Check Docker container health"
         methods:
           - "check(container_id: str) -> HealthStatus"
-      
+
       - name: "database_checker"
         description: "Check database connectivity"
         methods:
           - "check_postgres(host: str, port: int) -> DbStatus"
-      
+
       - name: "connectivity_tester"
         description: "Test network connectivity"
         methods:
@@ -467,7 +467,7 @@ libraries:
         description: "Backup configuration files"
         methods:
           - "backup(files: List[Path], output_dir: Path)"
-      
+
       - name: "snapshot_storer"
         description: "Store and manage snapshots"
         methods:
@@ -492,7 +492,7 @@ libraries:
         description: "Report deployment status"
         methods:
           - "report(result: DeploymentResult) -> str"
-      
+
       - name: "metadata_logger"
         description: "Log deployment metadata"
         methods:
@@ -522,35 +522,35 @@ entry_points:
       - "validate"
       - "template"
       - "status"
-  
+
   deploy:
     status: "PLANNED"
     description: "Run complete deployment orchestration"
     flow: "main_deployment_flow"
-    
+
   rollback:
     status: "PLANNED"
     description: "Rollback to previous deployment snapshot"
     flow: "rollback_flow"
-    
+
   health:
     status: "PLANNED"
     description: "Check deployment health"
     phases:
       - "phase_5_health_verification"
-    
+
   validate:
     status: "PLANNED"
     description: "Validate deployment configuration"
     phases:
       - "phase_1_preflight"
-    
+
   template:
     status: "PLANNED"
     description: "Render deployment templates"
     phases:
       - "phase_2_template_rendering"
-    
+
   status:
     status: "PLANNED"
     description: "Check deployment status"
@@ -571,7 +571,7 @@ flows:
       - "phase_4_deployment"
       - "phase_5_health_verification"
       - "phase_6_post_deployment"
-    
+
   rollback_flow:
     description: "Rollback to previous deployment"
     steps:
@@ -580,7 +580,7 @@ flows:
       - "Restore snapshot configuration"
       - "Start previous deployment"
       - "Verify rollback health"
-  
+
   validation_only_flow:
     description: "Validate without deploying"
     phases:
@@ -595,7 +595,7 @@ implementation_status:
   overall: "PLANNED"
   last_updated: "2025-10-15"
   notes: "Complete specification ready for scaffolding"
-  
+
 design:
   pattern: "phase-step-unit"
   phase_count: 6
@@ -608,27 +608,27 @@ dependencies:
     - name: "docker"
       version: ">=7.0.0"
       purpose: "Container management"
-    
+
     - name: "docker-compose"
       version: ">=2.0.0"
       purpose: "Multi-container orchestration"
-    
+
     - name: "jinja2"
       version: ">=3.0.0"
       purpose: "Template rendering"
-    
+
     - name: "click"
       version: ">=8.0.0"
       purpose: "CLI framework"
-    
+
     - name: "rich"
       version: ">=13.0.0"
       purpose: "Terminal formatting"
-    
+
     - name: "pyyaml"
       version: ">=6.0.0"
       purpose: "YAML processing"
-  
+
   optional:
     - name: "docker-prober-utility"
       purpose: "Preflight validation"
@@ -640,7 +640,7 @@ configuration:
     - ".env"
     - "YAML"
     - "JSON"
-  
+
 rollback:
   snapshot_before_deploy: true
   default_mode: "manual"

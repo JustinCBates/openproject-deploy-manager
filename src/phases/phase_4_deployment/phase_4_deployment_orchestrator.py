@@ -497,9 +497,6 @@ class Phase4DeploymentOrchestrator:
 
 def main():
     """Test the phase orchestrator."""
-    from pathlib import Path
-    import yaml
-
     # Setup logging
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 

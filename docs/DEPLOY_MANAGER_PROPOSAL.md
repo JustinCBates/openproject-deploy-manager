@@ -1,6 +1,6 @@
 # Deploy-Manager Structure Proposal
 
-**Created**: October 15, 2025  
+**Created**: October 15, 2025
 **Purpose**: Define the deploy-manager component structure using control-flow system from scratch
 
 ---

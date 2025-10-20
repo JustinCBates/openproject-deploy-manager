@@ -12,17 +12,10 @@ from typing import Dict, Any
 import logging
 import json
 
-from phases.libraries.health.container_health_checker import (
-    ContainerHealthChecker,
-    HealthCheckResult,
-)
-from phases.libraries.health.endpoint_prober import EndpointProber, ProbeReport
-from phases.libraries.health.database_checker import DatabaseChecker, DbCheckResult
-from phases.libraries.health.connectivity_tester import (
-    ConnectivityTester,
-    ConnectivityTest,
-    ConnectivityReport,
-)
+from phases.libraries.health.container_health_checker import ContainerHealthChecker
+from phases.libraries.health.endpoint_prober import EndpointProber
+from phases.libraries.health.database_checker import DatabaseChecker
+from phases.libraries.health.connectivity_tester import ConnectivityTester
 
 logger = logging.getLogger(__name__)
 
@@ -386,8 +379,6 @@ class Phase5HealthVerificationOrchestrator:
 
 def main():
     """Test the phase orchestrator."""
-    import sys
-
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     project_root = Path(__file__).parent.parent.parent

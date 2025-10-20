@@ -361,9 +361,6 @@ class Phase3SnapshotOrchestrator:
 
 def main():
     """Test the phase orchestrator."""
-    from pathlib import Path
-    import yaml
-
     # Setup logging
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 

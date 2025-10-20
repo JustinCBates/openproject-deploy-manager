@@ -5,8 +5,7 @@ JinjaRenderer Unit
 Render Jinja2 templates
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import logging
 from jinja2 import (
     Environment,

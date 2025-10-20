@@ -18,7 +18,7 @@ We use a structured approach to testing with clear separation of concerns:```
 
 - **End-to-End Tests**: Test complete deployment scenarios and rollback workflows├── integration/             # Integration tests for multiple components
 
-├── e2e/                     # End-to-end workflow tests  
+├── e2e/                     # End-to-end workflow tests
 
 ## 📁 **Directory Structure**├── scripts/                 # Test runner utilities
 
@@ -36,7 +36,7 @@ testing/├── documentation/           # Testing guides and documentation
 
 ├── integration/            # Integration tests (components working together)## 🚀 Quick Start
 
-│   ├── conftest.py         # Integration test fixtures  
+│   ├── conftest.py         # Integration test fixtures
 
 │   └── __init__.py### Run All Tests
 
@@ -62,7 +62,7 @@ testing/├── documentation/           # Testing guides and documentation
 
 ├── results/                # Test results and reports# Integration tests only
 
-├── documentation/          # Testing guides and documentationpython testing/scripts/run_integration_tests.py  
+├── documentation/          # Testing guides and documentationpython testing/scripts/run_integration_tests.py
 
 │   ├── testing_guide.md    # Comprehensive testing guide
 
@@ -84,7 +84,7 @@ testing/├── documentation/           # Testing guides and documentation
 
 cd testing
 
-python scripts/run_all_tests.py# Specific test type  
+python scripts/run_all_tests.py# Specific test type
 
 ```pytest testing/unit/
 
@@ -188,7 +188,7 @@ pytest testing/ -v                         # All tests
 
 1. Unit tests (fast feedback)
 
-1. **Naming**: Test files must start with `test_`2. Integration tests (component interaction)  
+1. **Naming**: Test files must start with `test_`2. Integration tests (component interaction)
 
 2. **Documentation**: Each test should have a clear docstring3. E2E tests (full workflows)
 

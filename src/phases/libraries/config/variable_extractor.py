@@ -5,8 +5,7 @@ VariableExtractor Unit
 Extract template variables from config
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Set
+from typing import Dict, Any, Optional, Set
 import logging
 import re
 

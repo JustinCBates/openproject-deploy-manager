@@ -1,7 +1,7 @@
 # Flow-Editor Bug Fixes Log
 
-**Date**: October 15, 2025  
-**Repo**: control-flow  
+**Date**: October 15, 2025
+**Repo**: control-flow
 **Files Modified**: `src/control_flow_engine/ui/flow_editor.py`, `src/control_flow_engine/core/engine.py`
 
 ---
@@ -27,7 +27,7 @@ from control_flow_engine.core.engine import ControlFlowManager
 ### 2. ❌ TypeError: Missing `spec_file` argument
 **Error**: `TypeError: ControlFlowDesigner.__init__() missing 1 required positional argument: 'spec_file'`
 
-**Root Cause**: 
+**Root Cause**:
 - `ControlFlowDesigner` requires both `spec_file` and `project_root` arguments
 - Flow editor was only passing `project_root`
 
@@ -62,7 +62,7 @@ self.manager.load_specification()
 ### 3. ❌ AttributeError: `flow_name` doesn't exist in header
 **Error**: `AttributeError: 'ControlFlowManager' object has no attribute 'flow_name'`
 
-**Root Cause**: 
+**Root Cause**:
 - `_print_header()` referenced `self.manager.flow_name`
 - `ControlFlowManager` doesn't have a `flow_name` attribute
 
@@ -71,7 +71,7 @@ self.manager.load_specification()
 # Before
 print(f"  Flow: {self.manager.flow_name}")
 
-# After  
+# After
 print(f"  Spec File: {self.spec_file.name}")
 ```
 
@@ -82,7 +82,7 @@ print(f"  Spec File: {self.spec_file.name}")
 ### 4. ❌ Missing `get_specification()` method
 **Error**: `AttributeError: 'ControlFlowManager' object has no attribute 'get_specification'`
 
-**Root Cause**: 
+**Root Cause**:
 - Flow editor calls `self.manager.get_specification()` throughout
 - `ControlFlowManager` only had `load_specification()`, no getter
 
@@ -91,7 +91,7 @@ print(f"  Spec File: {self.spec_file.name}")
 def get_specification(self) -> Dict[str, Any]:
     """
     Get the loaded specification.
-    
+
     Returns:
         The complete specification dictionary
     """
@@ -107,7 +107,7 @@ def get_specification(self) -> Dict[str, Any]:
 ### 5. ❌ AttributeError: `flow_name` in browse function
 **Error**: `AttributeError: 'ControlFlowManager' object has no attribute 'flow_name'`
 
-**Root Cause**: 
+**Root Cause**:
 - `_browse_flow()` tried to access `self.manager.flow_name`
 - Spec structure has `phases` at top level, not under a named flow
 
@@ -119,7 +119,7 @@ def _browse_flow(self):
         # Get phases directly from spec
         spec = self.manager.get_specification()
         phases_dict = spec.get('phases', {})
-        
+
         # Convert dict to list and sort by sequence
         phases_list = []
         for phase_id, phase_data in phases_dict.items():
@@ -132,15 +132,15 @@ def _browse_flow(self):
                 'status': phase_data.get('status', 'unknown')
             }
             phases_list.append(phase_info)
-        
+
         sorted_phases = sorted(phases_list, key=lambda p: p['sequence'])
-        
+
         # Display phases with steps
         for phase in sorted_phases:
             print(f"[{phase['sequence']}] {phase['name']}")
             print(f"    Status: {phase['status']}")
             # ... display steps with units
-    
+
     except Exception as e:
         # Error handling with traceback
         print(f"\n❌ Error: {e}")
@@ -167,15 +167,15 @@ except Exception as e:
     print("=" * 70)
     print(f"Error: {str(e)}")
     print(f"Type: {type(e).__name__}")
-    
+
     # Print traceback for debugging
     import traceback
     print("\nTraceback:")
     traceback.print_exc()
-    
+
     print("\n" + "=" * 70)
     input("\nPress Enter to return to main menu...")
-    
+
     # Re-print header to clean up terminal
     self._print_header()
     continue
@@ -223,7 +223,7 @@ $ python3 bin/flow-editor /opt/openproject/external/deploy-manager
 ? What would you like to do? 📋 Browse Flow Structure
 
 ======================================================================
-  Current Flow Structure  
+  Current Flow Structure
 ======================================================================
 
 [10] Preflight Validation

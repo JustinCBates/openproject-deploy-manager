@@ -23,7 +23,7 @@ cd /opt/openproject/external/control-flow && python3 bin/flow-editor /opt/openpr
 ### ⚠️ Not Yet Tested
 - Renumber Sequences
 - Insert Phase/Step
-- Delete Phase/Step  
+- Delete Phase/Step
 - View History
 - Rollback Changes
 

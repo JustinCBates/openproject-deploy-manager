@@ -12,7 +12,6 @@ from typing import Dict, Any
 import logging
 
 from phases.libraries.config.variable_extractor import VariableExtractor
-from phases.libraries.config.env_generator import EnvGenerator
 from phases.libraries.templates.jinja_renderer import JinjaRenderer
 from phases.libraries.templates.template_validator import TemplateValidator
 

@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 import logging
 import os
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -195,7 +194,6 @@ class DeploymentOrchestrator:
             Dictionary with render results
         """
         from jinja2 import Environment, FileSystemLoader
-        import yaml
 
         logger.info(
             f"Rendering templates from {self.templates_dir} to {self.output_dir}"

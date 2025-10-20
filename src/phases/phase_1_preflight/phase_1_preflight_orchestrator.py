@@ -16,7 +16,6 @@ from phases.libraries.config.config_validator import ConfigValidator
 from phases.libraries.docker.docker_checker import DockerChecker
 from phases.libraries.network.port_checker import PortChecker
 from phases.libraries.system.resource_checker import ResourceChecker
-from phases.libraries.templates.template_validator import TemplateValidator
 
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,9 @@
 # Architecture Decision Record: Runtime Output Directories
 
-**Date**: October 15, 2025  
-**Status**: ✅ IMPLEMENTED  
-**Affected Repos**: deploy-manager, control-flow  
-**Issue**: Duplicate `phases/` directory confusion  
+**Date**: October 15, 2025
+**Status**: ✅ IMPLEMENTED
+**Affected Repos**: deploy-manager, control-flow
+**Issue**: Duplicate `phases/` directory confusion
 
 ## Problem Statement
 
@@ -68,11 +68,11 @@ class PhaseOrchestrator:
     def __init__(self, project_root: Path, config: Dict[str, Any]):
         self.project_root = project_root
         self.config = config
-        
+
         # Runtime directory for outputs
         self.phase_dir = project_root / "runtime" / f"phase_{N}_{name}"
         self.outputs_dir = self.phase_dir / "outputs"
-        
+
         # Auto-create outputs directory
         self.outputs_dir.mkdir(parents=True, exist_ok=True)
 ```
@@ -160,7 +160,7 @@ All outputs correctly created in `runtime/` directory.
    ```python
    # Old:
    self.phase_dir = project_root / "phases" / "phase_X"
-   
+
    # New:
    self.phase_dir = project_root / "runtime" / "phase_X"
    ```
@@ -170,7 +170,7 @@ All outputs correctly created in `runtime/` directory.
    # Runtime output directories
    /runtime/
    /phases/    # Legacy - keep for safety
-   
+
    # Python
    __pycache__/
    *.py[cod]

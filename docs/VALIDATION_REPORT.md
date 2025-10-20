@@ -1,7 +1,7 @@
 # Control Flow Validation Report
 
-**Date**: October 15, 2025  
-**Specification**: `design_specs/control_flows.yml`  
+**Date**: October 15, 2025
+**Specification**: `design_specs/control_flows.yml`
 **Status**: ✅ **VALIDATED & READY**
 
 ---

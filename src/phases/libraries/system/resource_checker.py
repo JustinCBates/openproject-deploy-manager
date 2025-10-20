@@ -5,8 +5,7 @@ ResourceChecker Unit
 Check system resources
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 import logging
 import psutil

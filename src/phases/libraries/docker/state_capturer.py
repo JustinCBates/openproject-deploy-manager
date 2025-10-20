@@ -5,13 +5,11 @@ StateCapturer Unit
 Capture container states for snapshots
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 import logging
 import subprocess
 import json
-import shlex
 
 logger = logging.getLogger(__name__)
 

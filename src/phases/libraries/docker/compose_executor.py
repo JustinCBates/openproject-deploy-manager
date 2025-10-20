@@ -6,8 +6,8 @@ Execute docker-compose commands
 """
 
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass, field
+from typing import Dict, Any, Optional
+from dataclasses import dataclass
 import logging
 import subprocess
 import shlex

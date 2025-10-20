@@ -12,10 +12,10 @@ def main():
     """Run unit tests only."""
     print("🧪 Running Unit Tests")
     print("=" * 40)
-    
+
     # Change to project root
     project_root = Path(__file__).parent.parent.parent
-    
+
     # Run unit tests
     cmd = [
         sys.executable, "-m", "pytest",
@@ -24,14 +24,14 @@ def main():
         "--tb=short",
         "-m", "not slow"
     ]
-    
+
     result = subprocess.run(cmd, cwd=project_root)
-    
+
     if result.returncode == 0:
         print("✅ All unit tests passed!")
     else:
         print("❌ Some unit tests failed!")
-        
+
     return result.returncode
 
 if __name__ == "__main__":

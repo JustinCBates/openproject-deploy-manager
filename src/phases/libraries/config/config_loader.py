@@ -5,8 +5,7 @@ ConfigLoader Unit
 Load configuration from YAML/env files
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import logging
 import yaml
 

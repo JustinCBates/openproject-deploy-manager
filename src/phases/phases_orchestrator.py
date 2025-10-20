@@ -6,7 +6,7 @@ This orchestrator coordinates all deployment phases in sequence.
 """
 
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any
 import logging
 import shutil
 
@@ -481,8 +481,6 @@ class PhasesOrchestrator:
 
 def main():
     """Test the global orchestrator."""
-    import sys
-
     project_root = Path(__file__).parent.parent
     config = {}
 

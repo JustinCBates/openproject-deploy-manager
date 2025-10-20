@@ -5,8 +5,7 @@ HealthChecker Unit
 Check service health
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
 import logging

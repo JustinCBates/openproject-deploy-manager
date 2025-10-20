@@ -5,8 +5,7 @@ ConnectivityTester Unit
 Test network connectivity between services using TCP/UDP port checking
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 import socket
