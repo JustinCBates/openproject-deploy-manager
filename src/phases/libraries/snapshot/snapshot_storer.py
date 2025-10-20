@@ -150,7 +150,7 @@ class SnapshotStorer:
                 )
 
             # Read from file
-            with open(snapshot_file, "r") as f:
+            with open(snapshot_file) as f:
                 snapshot_dict = json.load(f)
 
             # Convert to Snapshot object
@@ -189,7 +189,7 @@ class SnapshotStorer:
 
             for snapshot_file in snapshot_files:
                 try:
-                    with open(snapshot_file, "r") as f:
+                    with open(snapshot_file) as f:
                         snapshot_dict = json.load(f)
 
                     # Create snapshot with minimal data for listing

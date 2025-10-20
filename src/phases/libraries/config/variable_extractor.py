@@ -163,12 +163,12 @@ def main():
 server {
     listen {{ port }};
     server_name {{ domain }};
-    
+
     {% if ssl_enabled %}
     ssl on;
     ssl_certificate {{ ssl_cert }};
     {% endif %}
-    
+
     {% for service in services %}
     upstream {{ service }};
     {% endfor %}

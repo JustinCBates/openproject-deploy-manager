@@ -157,7 +157,7 @@ class Phase4DeploymentOrchestrator:
                 }
 
             # Count lines (excluding comments and empty lines)
-            with open(env_file_path, "r") as f:
+            with open(env_file_path) as f:
                 lines = f.readlines()
             variable_count = sum(
                 1 for line in lines if line.strip() and not line.strip().startswith("#")

@@ -158,13 +158,13 @@ class MetadataLogger:
             entries = []
 
             if self.log_format == "json":
-                with open(log_path, "r") as f:
+                with open(log_path) as f:
                     for line in f:
                         if line.strip():
                             entries.append(json.loads(line))
             else:
                 # Text format - basic parsing
-                with open(log_path, "r") as f:
+                with open(log_path) as f:
                     content = f.read()
                     # Simple text parsing (not as structured)
                     entries.append({"raw": content})

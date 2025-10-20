@@ -76,7 +76,7 @@ class PortChecker:
                 logger.debug(f"Port {port} is available")
                 return True
 
-        except socket.error as e:
+        except OSError as e:
             logger.warning(f"Error checking port {port}: {e}")
             # Assume unavailable if we can't check
             return False
