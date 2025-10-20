@@ -2,9 +2,6 @@
 
 Deployment orchestration for Docker Compose stacks with health checking, rollback capabilities, and live validation.
 
-**Version**: 2.0.0
-**Dual-Mode Support**: Development & Production
-
 ## Features
 
 - **Deployment Orchestration**: Coordinate complete docker-compose lifecycle
@@ -13,7 +10,6 @@ Deployment orchestration for Docker Compose stacks with health checking, rollbac
 - **Preflight Validation**: Integrate with docker-prober-utility for pre-deployment checks
 - **Automatic Rollback**: Rollback on deployment failure with state snapshots
 - **Progress Monitoring**: Real-time deployment progress and logging
-- **Dual-Mode Operation**: Works in both development (git submodule) and production (pip package) environments
 
 ## Purpose
 
@@ -21,120 +17,53 @@ This is a generic, reusable deployment orchestration tool designed to work with 
 
 ## Installation
 
-### Production Mode (Pip Package)
-
 ```bash
 pip install openproject-deploy-manager
 ```
 
-### Development Mode (Git Submodule)
+Or install from source:
 
 ```bash
 git clone https://github.com/JustinCBates/openproject-deploy-manager.git
 cd openproject-deploy-manager
-pip install -e ".[dev]"
+pip install -e .
 ```
 
 ## Usage
 
-### Production Mode (Explicit Paths)
-
-When installed as a pip package and called by an orchestrator:
-
-```python
-from pathlib import Path
-from openproject_deploy_manager import DeploymentOrchestrator
-
-# Orchestrator provides paths
-deployer = DeploymentOrchestrator(
-    config={"domain": "example.com", "postgres_password": "secret123"},
-    templates_dir=Path("/opt/openproject/templates"),
-    output_dir=Path("/opt/openproject/outputs"),
-    compose_file=Path("/opt/openproject/docker-compose.yml"),
-    snapshot_dir=Path("/opt/openproject/backups/snapshots")
-)
-
-# Render templates
-result = deployer.render_templates()
-print(f"Rendered {result['files_rendered']} templates")
-
-# Create pre-deployment snapshot
-snapshot = deployer.create_snapshot("pre_deploy")
-
-# Execute deployment
-result = deployer.deploy()
-
-if result['status'] == 'success':
-    print(f"Deployment successful")
-else:
-    print(f"Deployment failed: {result.get('message')}")
-```
-
-### Development Mode (Auto-Detected)
-
-When running from git repository (development):
+### Basic Usage
 
 ```python
 from openproject_deploy_manager import DeploymentOrchestrator
 
-# Auto-detects development mode (uses local ./templates/ and ./outputs/)
-deployer = DeploymentOrchestrator(
-    config={"domain": "example.com", "port": "8080"}
+# Deploy Docker Compose stack
+orchestrator = DeploymentOrchestrator(
+    config={"domain": "example.com", "port": "8080"},
+    compose_file="docker-compose.yml",
+    template_dir="templates/",
+    prober_enabled=True
 )
 
 # Execute deployment
-result = deployer.deploy()
+result = orchestrator.deploy(dry_run=False)
 
-if result['status'] == 'success':
-    print(f"Deployment successful")
+if result.success:
+    print(f"Deployed {len(result.services_started)} services successfully")
 else:
-    print(f"Deployment failed: {result.get('message')}")
-```
-
-### Force Development Mode
-
-```python
-# Explicitly force development mode
-deployer = DeploymentOrchestrator(
-    config=my_config,
-    use_local_paths=True
-)
-```
-
-Or via environment variable:
-
-```bash
-export OPENPROJECT_DEV_MODE=1
-```
-
-### Custom Paths in Development
-
-```python
-from pathlib import Path
-
-# Override default paths even in development mode
-deployer = DeploymentOrchestrator(
-    config=my_config,
-    templates_dir=Path("/custom/templates"),
-    output_dir=Path("/custom/outputs"),
-    use_local_paths=True
-)
+    print(f"Deployment failed: {result.error_message}")
 ```
 
 ### Command Line Interface
 
 ```bash
-# Deploy stack using .cfg file from Configuration Manager
-deploy-manager deploy --config=interactive_config.cfg
-
-# Alternative: Deploy using .env file
+# Deploy stack
 deploy-manager deploy --config=.env
 
 # Dry run (validation only)
-deploy-manager deploy --dry-run --config=interactive_config.cfg
+deploy-manager deploy --dry-run
 
 # Deploy without prober preflight
-deploy-manager deploy --no-prober --config=interactive_config.cfg
+deploy-manager deploy --no-prober
 
 # Check deployment status
 deploy-manager status
@@ -148,23 +77,20 @@ deploy-manager rollback
 ### Control Flow
 
 ```
-Configuration Input (.cfg file from Configuration Manager)
+Configuration Input
     ↓
 Pre-deployment Validation
-    ├─ Load and parse .cfg configuration file
     ├─ Validate configuration completeness
-    ├─ Check Docker daemon accessibility
+    ├─ Check Docker daemon
     ├─ Verify port availability
     └─ Run prober preflight check (optional)
     ↓
 Template Rendering
-    ├─ Extract template variables from .cfg
     ├─ Render Jinja2 templates (Caddyfile, nginx.conf, etc.)
-    └─ Validate rendered output syntax
+    └─ Validate rendered output
     ↓
 Deployment Execution
     ├─ Create deployment snapshot (for rollback)
-    ├─ Convert .cfg to .env for Docker Compose
     ├─ Pull images (if requested)
     ├─ docker-compose up -d
     └─ Monitor service startup
@@ -172,7 +98,6 @@ Deployment Execution
 Health Checking
     ├─ Wait for Docker health checks
     ├─ Probe HTTP/HTTPS endpoints
-```
     └─ Verify service connectivity
     ↓
 Post-deployment
@@ -182,46 +107,6 @@ Post-deployment
     ↓
 Deployment Result (Success/Failure)
 ```
-
-## Configuration Integration
-
-### Primary Input: `.cfg` File
-
-The Deploy Manager consumes the `interactive_config.cfg` file produced by the Configuration Manager:
-
-```bash
-# Example integration
-config-manager configure --interactive
-# → Generates: interactive_config.cfg
-
-deploy-manager deploy --config=interactive_config.cfg
-# → Reads configuration and deploys stack
-```
-
-### Configuration Loading Process
-
-```python
-class ConfigurationLoader:
-    def load_cfg_file(path: Path) -> Dict[str, str]
-    def convert_to_env_format() -> Dict[str, str]
-    def extract_template_variables() -> Dict[str, Any]
-    def validate_required_keys() -> ValidationResult
-```
-
-**Configuration Processing Flow**:
-1. **Load .cfg file** → Parse bash-style key="value" pairs
-2. **Validate completeness** → Check required deployment variables
-3. **Convert formats** → Generate .env and template variables
-4. **Template rendering** → Use variables in Jinja2 templates
-
-### Key Configuration Categories
-
-From `interactive_config.cfg`:
-
-- **Core Settings**: `DOMAIN_NAME`, `OPENPROJECT_HTTPS`, `PORT`
-- **Database Config**: `DATABASE_URL`, `POSTGRES_PASSWORD`
-- **Proxy Settings**: `PROXY_TYPE`, `SSL_EMAIL`, `SECURITY_HEADERS_ENABLED`
-- **Deployment Behavior**: `PROBER_ENABLED`, `PULL_IMAGES`, `HEALTH_CHECK_TIMEOUT`
 
 ### Components
 
@@ -391,29 +276,37 @@ class ProberIntegration:
 
 ## Dependencies
 
-### Production (End Users)
+### Required Dependencies
 
-**Required:**
-- `docker` - Container management
-- `docker-compose` - Container orchestration
-- `python>=3.8` - Python runtime
+```toml
+dependencies = [
+    "docker>=7.0.0",        # Docker SDK
+    "jinja2>=3.1.0",        # Template rendering
+    "pyyaml>=6.0",          # Configuration parsing
+    "click>=8.1.0",         # CLI framework
+    "rich>=13.0.0",         # Terminal output
+]
+```
 
-**Optional Features:**
-- `curl` - HTTP requests (if downloading images)
-- `openssl` - SSL certificates (if managing certificates)
-- `tar` - Archive handling (if backup/restore)
+### External Dependencies
 
-### Development (Contributors)
+- **docker-prober-utility**: Pre-deployment validation of HTTP/HTTPS endpoints
+  ```toml
+  docker-prober-utility @ git+https://github.com/JustinCBates/docker_prober_utility.git@main
+  ```
 
-**Required:**
-- `git` - Version control
-- `python>=3.8` - Python runtime
+### Development Dependencies
 
-**Optional Tools:**
-- `pytest` - Testing (if adding tests)
-- `black` - Code formatting (if formatting code)
-- `shellcheck` - Shell script validation (if using shell scripts)
-
+```toml
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-docker>=1.0.0",  # Docker fixtures for testing
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+```
 
 ## Development
 
@@ -433,17 +326,9 @@ docker --version
 
 ### Testing
 
-Tests are organized by operation mode:
-
 ```bash
-# Run all tests (requires Docker)
+# Run tests (requires Docker)
 pytest
-
-# Test development mode
-pytest tests/test_development_mode.py -v
-
-# Test production mode
-pytest tests/test_production_mode.py -v
 
 # Run tests with coverage
 pytest --cov=openproject_deploy_manager --cov-report=term-missing
@@ -453,121 +338,6 @@ pytest tests/test_orchestrator.py
 
 # Skip Docker-dependent tests
 pytest -m "not docker"
-```
-
-## Environment Variables
-
-| Variable | Values | Effect |
-|----------|--------|--------|
-| `OPENPROJECT_DEV_MODE` | `1`, `true`, `yes` | Force development mode (use local paths) |
-
-**Examples**:
-
-```bash
-# Force development mode
-export OPENPROJECT_DEV_MODE=1
-python -c "from openproject_deploy_manager import DeploymentOrchestrator; d = DeploymentOrchestrator(config={})"
-# Uses ./templates/ and ./outputs/
-
-# Production mode (default when installed via pip)
-unset OPENPROJECT_DEV_MODE
-python -c "from openproject_deploy_manager import DeploymentOrchestrator; d = DeploymentOrchestrator(config={}, templates_dir='/opt/openproject/templates', output_dir='/opt/openproject/outputs')"
-# Uses /opt/openproject/templates/ and /opt/openproject/outputs/
-```
-
-## Mode Detection
-
-The Deployment Orchestrator auto-detects its operating mode:
-
-1. **Environment Variable Check**: If `OPENPROJECT_DEV_MODE=1`, use development mode
-2. **Git Repository Check**: If `.git` directory exists in parent paths, use development mode
-3. **Site-Packages Check**: If running from `site-packages/`, use production mode
-4. **Default**: Development mode
-
-**Override Detection**:
-
-```python
-# Force production mode even in development
-deployer = DeploymentOrchestrator(
-    config=my_config,
-    templates_dir=Path("/opt/openproject/templates"),
-    output_dir=Path("/opt/openproject/outputs"),
-    use_local_paths=False  # Explicitly disable auto-detection
-)
-
-# Force development mode even when installed
-deployer = DeploymentOrchestrator(
-    config=my_config,
-    use_local_paths=True
-)
-```
-
-## API Reference
-
-### DeploymentOrchestrator
-
-```python
-class DeploymentOrchestrator:
-    def __init__(
-        self,
-        config: Dict[str, Any],                      # Configuration dictionary
-        project_root: Optional[Path] = None,         # Legacy (deprecated)
-        templates_dir: Optional[Path] = None,        # Where to find templates
-        output_dir: Optional[Path] = None,           # Where to write rendered files
-        compose_file: Optional[Path] = None,         # docker-compose.yml path
-        snapshot_dir: Optional[Path] = None,         # Snapshot storage
-        config_file: Optional[Path] = None,          # Config file path
-        use_local_paths: Optional[bool] = None       # Force dev/prod mode
-    ):
-        """
-        Initialize Deployment Orchestrator.
-
-        Production Mode (paths required):
-            deployer = DeploymentOrchestrator(
-                config=cfg,
-                templates_dir=Path("/opt/openproject/templates"),
-                output_dir=Path("/opt/openproject/outputs")
-            )
-
-        Development Mode (auto-detected):
-            deployer = DeploymentOrchestrator(config=cfg)
-        """
-```
-
-### Methods
-
-```python
-def render_templates(self) -> Dict[str, Any]:
-    """
-    Render Jinja2 templates.
-
-    Returns:
-        Dict with:
-        - status: 'success' | 'error' | 'warning'
-        - files_rendered: int
-        - rendered_files: List[str]
-    """
-
-def create_snapshot(self, snapshot_name: Optional[str] = None) -> Dict[str, Any]:
-    """
-    Create deployment snapshot.
-
-    Returns:
-        Dict with:
-        - status: 'success' | 'error'
-        - snapshot_name: str
-        - snapshot_path: str
-    """
-
-def deploy(self, dry_run: bool = False) -> Dict[str, Any]:
-    """
-    Execute deployment.
-
-    Returns:
-        Dict with:
-        - status: 'success' | 'error'
-        - message: str (if error)
-    """
 ```
 
 ### Code Quality
@@ -655,7 +425,7 @@ openproject-deploy-manager/
 server {
     listen {{ port }};
     server_name {{ domain }};
-
+    
     location / {
         proxy_pass http://backend:8080;
         proxy_set_header Host $host;
@@ -663,117 +433,6 @@ server {
     }
 }
 ```
-
-## Development Setup
-
-### Prerequisites
-
-- Python 3.11+
-- Git
-- Docker & Docker Compose (for integration tests)
-
-### Setting Up Development Environment
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/JustinCBates/openproject-deploy-manager.git
-   cd openproject-deploy-manager
-   ```
-
-2. **Install development dependencies**:
-   ```bash
-   pip install -e ".[dev]"
-   ```
-
-3. **Install pre-commit hooks**:
-   ```bash
-   pip install pre-commit
-   pre-commit install
-   ```
-
-   The pre-commit hooks will automatically:
-   - Format code with Black (line length 88)
-   - Lint with Flake8 (enforce unused import checks)
-   - Upgrade Python syntax with pyupgrade
-   - Fix trailing whitespace and end-of-file issues
-   - Validate YAML and TOML files
-
-### Running Pre-commit Hooks
-
-**Automatically on commit**:
-```bash
-git commit -m "your message"
-# Hooks run automatically before commit
-```
-
-**Manually on all files**:
-```bash
-pre-commit run --all-files
-```
-
-**Manually on specific files**:
-```bash
-pre-commit run --files src/phases/phase_1_preflight/*.py
-```
-
-**Skip hooks (emergency only)**:
-```bash
-git commit --no-verify -m "emergency fix"
-```
-
-### Running Tests
-
-**Run all tests**:
-```bash
-pytest
-```
-
-**Run with coverage**:
-```bash
-pytest --cov=src --cov-report=html
-```
-
-**Run specific test file**:
-```bash
-pytest tests/test_development_mode.py -v
-```
-
-### Code Quality Tools
-
-**Format code with Black**:
-```bash
-black src tests
-```
-
-**Lint with Flake8**:
-```bash
-flake8 src tests
-```
-
-**Check types with mypy** (if configured):
-```bash
-mypy src
-```
-
-### Common Issues
-
-**Pre-commit hook fails with "command not found"**:
-```bash
-# Reinstall pre-commit hooks
-pre-commit clean
-pre-commit install
-```
-
-**Black formatting conflicts**:
-```bash
-# Run Black manually and commit the changes
-black src tests
-git add -A
-git commit -m "style: apply Black formatting"
-```
-
-**Flake8 errors in generated/vendor code**:
-The pre-commit config excludes `testing/`, `src/runtime/`, and vendor paths. If you see errors in these paths, update `.pre-commit-config.yaml` to add more exclusions.
 
 ## License
 
@@ -785,15 +444,8 @@ Contributions are welcome! Please:
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes with tests
-4. Install pre-commit hooks (`pre-commit install`)
-5. Ensure all tests pass and hooks are green
-6. Submit a pull request
-
-**Code Style**:
-- Follow Black formatting (automatic via pre-commit)
-- Keep line length ≤ 88 characters
-- Use type hints where appropriate
-- Add docstrings for public APIs
+4. Ensure all tests pass and code is formatted
+5. Submit a pull request
 
 ## Support
 
