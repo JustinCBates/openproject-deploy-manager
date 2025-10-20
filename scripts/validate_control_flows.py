@@ -6,21 +6,9 @@ This script validates the control flow specification format before and after
 editing with the designer tools.
 """
 
-import sys
 from pathlib import Path
+import sys
 import yaml
-
-# Add control-flow engine to path
-control_flow_path = Path(__file__).parent.parent.parent / "control-flow" / "src"
-sys.path.insert(0, str(control_flow_path))
-
-try:
-    from control_flow_engine.core.engine import ControlFlowManager
-
-    print("✅ Successfully imported ControlFlowManager")
-except ImportError as e:
-    print(f"❌ Failed to import ControlFlowManager: {e}")
-    sys.exit(1)
 
 
 def validate_yaml_syntax(spec_file: Path) -> bool:
