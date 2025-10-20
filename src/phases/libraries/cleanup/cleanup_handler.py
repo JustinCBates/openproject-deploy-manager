@@ -272,8 +272,9 @@ class CleanupHandler:
                 if item.is_file():
                     try:
                         total += item.stat().st_size
-                    except:
-                        pass
+                    except (FileNotFoundError, PermissionError, OSError):
+                        # Ignore files that disappear or cannot be accessed
+                        continue
             return total
         return 0
 
