@@ -16,11 +16,11 @@ class ComposeManager:
     """
     Docker Compose operations
     """
-    
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialize ComposeManager.
-        
+
         Args:
             config: Optional configuration dictionary
         """
@@ -29,7 +29,7 @@ class ComposeManager:
     def up(compose_file: Path, services: List[str]):
         """
         Up
-        
+
         TODO: Implement this method
         """
         raise NotImplementedError("TODO: Implement up")
@@ -37,11 +37,10 @@ class ComposeManager:
     def down(remove_volumes: bool):
         """
         Down
-        
+
         TODO: Implement this method
         """
         raise NotImplementedError("TODO: Implement down")
-
 
 
 def main():
@@ -50,5 +49,5 @@ def main():
     print(f"{unit.__class__.__name__} initialized")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

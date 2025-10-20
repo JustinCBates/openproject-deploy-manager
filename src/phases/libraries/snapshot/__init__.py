@@ -6,7 +6,4 @@ Snapshot and rollback operations
 from .config_backupper import ConfigBackupper
 from .snapshot_storer import SnapshotStorer
 
-__all__ = [
-    'ConfigBackupper',
-    'SnapshotStorer'
-]
+__all__ = ["ConfigBackupper", "SnapshotStorer"]

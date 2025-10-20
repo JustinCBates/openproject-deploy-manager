@@ -16,11 +16,11 @@ class ProberRunner:
     """
     Run prober preflight checks
     """
-    
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialize ProberRunner.
-        
+
         Args:
             config: Optional configuration dictionary
         """
@@ -29,11 +29,10 @@ class ProberRunner:
     def run_preflight(config: Dict) -> ProberResult:
         """
         Run Preflight
-        
+
         TODO: Implement this method
         """
         raise NotImplementedError("TODO: Implement run_preflight")
-
 
 
 def main():
@@ -42,5 +41,5 @@ def main():
     print(f"{unit.__class__.__name__} initialized")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

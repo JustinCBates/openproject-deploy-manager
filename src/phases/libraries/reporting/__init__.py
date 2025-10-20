@@ -6,7 +6,4 @@ Reporting and logging
 from .status_reporter import StatusReporter
 from .metadata_logger import MetadataLogger
 
-__all__ = [
-    'StatusReporter',
-    'MetadataLogger'
-]
+__all__ = ["StatusReporter", "MetadataLogger"]
