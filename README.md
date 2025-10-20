@@ -664,6 +664,117 @@ server {
 }
 ```
 
+## Development Setup
+
+### Prerequisites
+
+- Python 3.11+
+- Git
+- Docker & Docker Compose (for integration tests)
+
+### Setting Up Development Environment
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/JustinCBates/openproject-deploy-manager.git
+   cd openproject-deploy-manager
+   ```
+
+2. **Install development dependencies**:
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+3. **Install pre-commit hooks**:
+   ```bash
+   pip install pre-commit
+   pre-commit install
+   ```
+
+   The pre-commit hooks will automatically:
+   - Format code with Black (line length 88)
+   - Lint with Flake8 (enforce unused import checks)
+   - Upgrade Python syntax with pyupgrade
+   - Fix trailing whitespace and end-of-file issues
+   - Validate YAML and TOML files
+
+### Running Pre-commit Hooks
+
+**Automatically on commit**:
+```bash
+git commit -m "your message"
+# Hooks run automatically before commit
+```
+
+**Manually on all files**:
+```bash
+pre-commit run --all-files
+```
+
+**Manually on specific files**:
+```bash
+pre-commit run --files src/phases/phase_1_preflight/*.py
+```
+
+**Skip hooks (emergency only)**:
+```bash
+git commit --no-verify -m "emergency fix"
+```
+
+### Running Tests
+
+**Run all tests**:
+```bash
+pytest
+```
+
+**Run with coverage**:
+```bash
+pytest --cov=src --cov-report=html
+```
+
+**Run specific test file**:
+```bash
+pytest tests/test_development_mode.py -v
+```
+
+### Code Quality Tools
+
+**Format code with Black**:
+```bash
+black src tests
+```
+
+**Lint with Flake8**:
+```bash
+flake8 src tests
+```
+
+**Check types with mypy** (if configured):
+```bash
+mypy src
+```
+
+### Common Issues
+
+**Pre-commit hook fails with "command not found"**:
+```bash
+# Reinstall pre-commit hooks
+pre-commit clean
+pre-commit install
+```
+
+**Black formatting conflicts**:
+```bash
+# Run Black manually and commit the changes
+black src tests
+git add -A
+git commit -m "style: apply Black formatting"
+```
+
+**Flake8 errors in generated/vendor code**:
+The pre-commit config excludes `testing/`, `src/runtime/`, and vendor paths. If you see errors in these paths, update `.pre-commit-config.yaml` to add more exclusions.
+
 ## License
 
 MIT
@@ -674,8 +785,15 @@ Contributions are welcome! Please:
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes with tests
-4. Ensure all tests pass and code is formatted
-5. Submit a pull request
+4. Install pre-commit hooks (`pre-commit install`)
+5. Ensure all tests pass and hooks are green
+6. Submit a pull request
+
+**Code Style**:
+- Follow Black formatting (automatic via pre-commit)
+- Keep line length ≤ 88 characters
+- Use type hints where appropriate
+- Add docstrings for public APIs
 
 ## Support
 
