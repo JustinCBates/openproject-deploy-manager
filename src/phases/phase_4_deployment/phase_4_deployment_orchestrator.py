@@ -10,12 +10,6 @@ Execute Docker Compose deployment
 from pathlib import Path
 from typing import Dict, Any
 import logging
-import sys
-
-# Add parent directories to path for library imports
-current_dir = Path(__file__).parent
-src_dir = current_dir.parent.parent
-sys.path.insert(0, str(src_dir))
 
 from phases.libraries.config.env_generator import EnvGenerator
 from phases.libraries.docker.image_puller import ImagePuller

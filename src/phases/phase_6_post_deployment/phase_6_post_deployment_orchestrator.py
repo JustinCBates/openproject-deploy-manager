@@ -10,13 +10,10 @@ Finalize deployment and cleanup
 from pathlib import Path
 from typing import Dict, Any
 import logging
-import sys
 
-# Import library units
-sys.path.insert(0, str(Path(__file__).parent.parent / "libraries"))
-from reporting.status_reporter import StatusReporter
-from reporting.metadata_logger import MetadataLogger
-from cleanup.cleanup_handler import CleanupHandler
+from phases.libraries.reporting.status_reporter import StatusReporter
+from phases.libraries.reporting.metadata_logger import MetadataLogger
+from phases.libraries.cleanup.cleanup_handler import CleanupHandler
 
 logger = logging.getLogger(__name__)
 

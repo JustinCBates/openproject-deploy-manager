@@ -156,8 +156,6 @@ class DeploymentOrchestrator:
         """
         # Import here to avoid circular dependencies
         try:
-            # Try to import from old location (development)
-            sys.path.insert(0, str(self.project_root / 'src'))
             from phases.phases_orchestrator import PhasesOrchestrator
         except ImportError:
             logger.warning("Could not import PhasesOrchestrator - deploy-manager phases not available")

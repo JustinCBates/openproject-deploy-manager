@@ -8,24 +8,19 @@ This orchestrator coordinates all deployment phases in sequence.
 from pathlib import Path
 from typing import Dict, Any, List
 import logging
-import sys
 import shutil
 
-# Add libraries to path for direct import
-libraries_path = Path(__file__).parent / "libraries"
-sys.path.insert(0, str(libraries_path))
-
-from .phase_1_preflight.phase_1_preflight_orchestrator import Phase1PreflightOrchestrator
-from .phase_2_template_rendering.phase_2_template_rendering_orchestrator import Phase2TemplateRenderingOrchestrator
-from .phase_3_snapshot.phase_3_snapshot_orchestrator import Phase3SnapshotOrchestrator
-from .phase_4_deployment.phase_4_deployment_orchestrator import Phase4DeploymentOrchestrator
-from .phase_5_health_verification.phase_5_health_verification_orchestrator import Phase5HealthVerificationOrchestrator
-from .phase_6_post_deployment.phase_6_post_deployment_orchestrator import Phase6PostDeploymentOrchestrator
+from phases.phase_1_preflight.phase_1_preflight_orchestrator import Phase1PreflightOrchestrator
+from phases.phase_2_template_rendering.phase_2_template_rendering_orchestrator import Phase2TemplateRenderingOrchestrator
+from phases.phase_3_snapshot.phase_3_snapshot_orchestrator import Phase3SnapshotOrchestrator
+from phases.phase_4_deployment.phase_4_deployment_orchestrator import Phase4DeploymentOrchestrator
+from phases.phase_5_health_verification.phase_5_health_verification_orchestrator import Phase5HealthVerificationOrchestrator
+from phases.phase_6_post_deployment.phase_6_post_deployment_orchestrator import Phase6PostDeploymentOrchestrator
 
 # Import library units for rollback
-from snapshot.snapshot_storer import SnapshotStorer
-from docker.compose_executor import ComposeExecutor
-from reporting.metadata_logger import MetadataLogger
+from phases.libraries.snapshot.snapshot_storer import SnapshotStorer
+from phases.libraries.docker.compose_executor import ComposeExecutor
+from phases.libraries.reporting.metadata_logger import MetadataLogger
 
 logger = logging.getLogger(__name__)
 

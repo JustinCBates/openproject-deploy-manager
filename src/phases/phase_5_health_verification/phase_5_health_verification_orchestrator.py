@@ -12,14 +12,10 @@ from typing import Dict, Any
 import logging
 import json
 
-# Import health library units
-import sys
-sys.path.insert(0, str(Path(__file__).parent.parent / "libraries"))
-
-from health.container_health_checker import ContainerHealthChecker, HealthCheckResult
-from health.endpoint_prober import EndpointProber, ProbeReport
-from health.database_checker import DatabaseChecker, DbCheckResult
-from health.connectivity_tester import ConnectivityTester, ConnectivityTest, ConnectivityReport
+from phases.libraries.health.container_health_checker import ContainerHealthChecker, HealthCheckResult
+from phases.libraries.health.endpoint_prober import EndpointProber, ProbeReport
+from phases.libraries.health.database_checker import DatabaseChecker, DbCheckResult
+from phases.libraries.health.connectivity_tester import ConnectivityTester, ConnectivityTest, ConnectivityReport
 
 logger = logging.getLogger(__name__)
 
