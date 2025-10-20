@@ -415,29 +415,29 @@ def main():
     config = {}
     context = {"config_path": str(config_path)}
 
-    print(f"Testing Phase 1 Preflight Orchestrator")
-    print(f"Config path: {config_path}")
-    print(f"Config exists: {config_path.exists()}")
-    print("=" * 70)
+    logger.info(f"Testing Phase 1 Preflight Orchestrator")
+    logger.info(f"Config path: {config_path}")
+    logger.info(f"Config exists: {config_path.exists()}")
+    logger.info("=" * 70)
 
     orchestrator = Phase1PreflightOrchestrator(project_root, config)
     result = orchestrator.execute(context)
 
-    print("=" * 70)
-    print(f"Phase Status: {result['status']}")
-    print(f"Messages: {len(result.get('messages', []))}")
-    print(f"Artifacts: {list(result.get('artifacts', {}).keys())}")
+    logger.info("=" * 70)
+    logger.info(f"Phase Status: {result['status']}")
+    logger.info(f"Messages: {len(result.get('messages', []))}")
+    logger.info(f"Artifacts: {list(result.get('artifacts', {}).keys())}")
 
     if result["status"] == "error":
-        print("\n❌ Phase failed with errors:")
+        logger.error("\n❌ Phase failed with errors:")
         for msg in result.get("messages", []):
-            print(f"  - {msg}")
+            logger.error(f"  - {msg}")
     elif result["status"] == "warning":
-        print("\n⚠️  Phase completed with warnings:")
+        logger.warning("\n⚠️  Phase completed with warnings:")
         for msg in result.get("messages", []):
-            print(f"  - {msg}")
+            logger.warning(f"  - {msg}")
     else:
-        print("\n✅ Phase completed successfully!")
+        logger.info("\n✅ Phase completed successfully!")
 
 
 if __name__ == "__main__":

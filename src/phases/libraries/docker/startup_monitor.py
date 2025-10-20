@@ -256,18 +256,18 @@ def main():
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    print("Testing StartupMonitor")
-    print("=" * 50)
+    logger.info("Testing StartupMonitor")
+    logger.info("=" * 50)
 
     monitor = StartupMonitor()
 
-    print("\n1. Testing container status retrieval:")
+    logger.info("\n1. Testing container status retrieval:")
     containers = monitor._get_container_status()
-    print(f"   Found {len(containers)} containers")
+    logger.info(f"   Found {len(containers)} containers")
     for container in containers[:5]:
-        print(f"   {container}")
+        logger.info(f"   {container}")
 
-    print("\n✅ StartupMonitor tests complete")
+    logger.info("\n✅ StartupMonitor tests complete")
 
 
 if __name__ == "__main__":

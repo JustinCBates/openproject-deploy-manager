@@ -259,7 +259,7 @@ def main():
     tester = ConnectivityTester()
 
     # Test with some common services
-    print("Testing connectivity...")
+    logger.info("Testing connectivity...")
 
     tests = [
         ConnectivityTest(
@@ -287,20 +287,20 @@ def main():
 
     report = tester.test(tests)
 
-    print(f"\nConnectivity Report:")
-    print(f"Total tests: {report.total_tests}")
-    print(f"Successful: {report.successful_tests}")
-    print(f"Failed: {report.failed_tests}")
-    print(f"All healthy: {report.all_connections_healthy}")
+    logger.info(f"\nConnectivity Report:")
+    logger.info(f"Total tests: {report.total_tests}")
+    logger.info(f"Successful: {report.successful_tests}")
+    logger.info(f"Failed: {report.failed_tests}")
+    logger.info(f"All healthy: {report.all_connections_healthy}")
 
     for result in report.tests:
         status_icon = "✅" if result.success else "❌"
-        print(
+        logger.info(
             f"{status_icon} {result.test.source} → {result.test.target_host}:{result.test.target_port}: "
             f"{result.status.value} ({result.response_time_ms:.2f}ms)"
         )
         if result.error_message:
-            print(f"   Error: {result.error_message}")
+            logger.info(f"   Error: {result.error_message}")
 
 
 if __name__ == "__main__":

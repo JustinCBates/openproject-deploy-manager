@@ -379,27 +379,26 @@ def main():
 
     orchestrator = Phase3SnapshotOrchestrator(project_root, config)
 
-    print("\n" + "=" * 70)
-    print("Testing Phase 3 Snapshot Orchestrator")
-    print("=" * 70)
-    print(f"Project root: {project_root}")
-    print(f"Outputs dir: {orchestrator.outputs_dir}")
-    print()
+    logger.info("\n" + "=" * 70)
+    logger.info("Testing Phase 3 Snapshot Orchestrator")
+    logger.info("=" * 70)
+    logger.info(f"Project root: {project_root}")
+    logger.info(f"Outputs dir: {orchestrator.outputs_dir}")
+    logger.info("")
 
     # Execute phase
     result = orchestrator.execute(context)
 
-    print("\n" + "=" * 70)
-    print("Phase 3 Result:")
-    print(f"  Status: {result['status']}")
-    print(f"  Messages: {result.get('messages', [])}")
-    print(f"  Artifacts: {len(result.get('artifacts', {}))}")
+    logger.info("\n" + "=" * 70)
+    logger.info("Phase 3 Result:")
+    logger.info(f"  Status: {result['status']}")
+    logger.info(f"  Messages: {result.get('messages', [])}")
+    logger.info(f"  Artifacts: {len(result.get('artifacts', {}))}")
 
     if result.get("snapshot_id"):
-        print(f"\n  Snapshot ID: {result['snapshot_id']}")
-        print(f"  Snapshot Path: {result.get('snapshot_path')}")
-
-    print("=" * 70)
+        logger.info(f"\n  Snapshot ID: {result['snapshot_id']}")
+        logger.info(f"  Snapshot Path: {result.get('snapshot_path')}")
+    logger.info("=" * 70)
 
 
 if __name__ == "__main__":

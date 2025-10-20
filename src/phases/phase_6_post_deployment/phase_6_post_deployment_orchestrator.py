@@ -322,8 +322,8 @@ def main():
     orchestrator = Phase6PostDeploymentOrchestrator(project_root, config)
     result = orchestrator.execute(context)
 
-    print(f"\n\nPhase 6 Result:")
-    print(json.dumps(result, indent=2))
+    logger.info(f"\n\nPhase 6 Result:")
+    logger.info(json.dumps(result, indent=2))
 
 
 if __name__ == "__main__":

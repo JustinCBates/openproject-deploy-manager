@@ -523,27 +523,27 @@ def main():
 
     orchestrator = Phase4DeploymentOrchestrator(project_root, config)
 
-    print("\n" + "=" * 70)
-    print("Testing Phase 4 Deployment Orchestrator")
-    print("=" * 70)
-    print(f"Project root: {project_root}")
-    print(f"Outputs dir: {orchestrator.outputs_dir}")
-    print()
+    logger.info("\n" + "=" * 70)
+    logger.info("Testing Phase 4 Deployment Orchestrator")
+    logger.info("=" * 70)
+    logger.info(f"Project root: {project_root}")
+    logger.info(f"Outputs dir: {orchestrator.outputs_dir}")
+    logger.info("")
 
     # Note: This is a dry-run test - actual deployment would require:
     # - Valid docker-compose.yml file
     # - Docker daemon running
     # - Proper Phase 1 & 2 artifacts in context
 
-    print("✅ Phase 4 orchestrator initialized successfully")
-    print("\nTo test full deployment flow:")
-    print("  1. Ensure Docker is running")
-    print("  2. Run Phases 1 & 2 first to generate artifacts")
-    print("  3. Pass their context to Phase 4")
-    print()
-    print(f"Phase ID: {orchestrator.PHASE_ID}")
-    print(f"Phase Sequence: {orchestrator.PHASE_SEQUENCE}")
-    print(f"Phase Name: {orchestrator.PHASE_NAME}")
+    logger.info("✅ Phase 4 orchestrator initialized successfully")
+    logger.info("\nTo test full deployment flow:")
+    logger.info("  1. Ensure Docker is running")
+    logger.info("  2. Run Phases 1 & 2 first to generate artifacts")
+    logger.info("  3. Pass their context to Phase 4")
+    logger.info("")
+    logger.info(f"Phase ID: {orchestrator.PHASE_ID}")
+    logger.info(f"Phase Sequence: {orchestrator.PHASE_SEQUENCE}")
+    logger.info(f"Phase Name: {orchestrator.PHASE_NAME}")
 
 
 if __name__ == "__main__":

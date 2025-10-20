@@ -406,14 +406,14 @@ def main():
     orchestrator = Phase5HealthVerificationOrchestrator(project_root, config)
     result = orchestrator.execute(context)
 
-    print("\n" + "=" * 70)
-    print("PHASE 5 TEST RESULT")
-    print("=" * 70)
-    print(f"Status: {result['status']}")
-    print(f"All Healthy: {result.get('all_healthy', 'N/A')}")
-    print(f"\nArtifacts: {len(result['artifacts'])}")
+    logger.info("\n" + "=" * 70)
+    logger.info("PHASE 5 TEST RESULT")
+    logger.info("=" * 70)
+    logger.info(f"Status: {result['status']}")
+    logger.info(f"All Healthy: {result.get('all_healthy', 'N/A')}")
+    logger.info(f"\nArtifacts: {len(result['artifacts'])}")
     for key, value in result["artifacts"].items():
-        print(f"  {key}: {value}")
+        logger.info(f"  {key}: {value}")
 
 
 if __name__ == "__main__":

@@ -491,11 +491,11 @@ def main():
     # Test main deployment flow
     result = orchestrator.execute_main_deployment_flow()
 
-    print(f"\nDeployment result: {result['status']}")
+    logger.info(f"\nDeployment result: {result['status']}")
     if result["status"] == "success":
-        print(f"Phases executed: {list(result['phases'].keys())}")
+        logger.info(f"Phases executed: {list(result['phases'].keys())}")
     else:
-        print(f"Failed at: {result.get('failed_phase', 'unknown')}")
+        logger.error(f"Failed at: {result.get('failed_phase', 'unknown')}")
 
 
 if __name__ == "__main__":
