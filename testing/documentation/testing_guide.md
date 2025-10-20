@@ -38,7 +38,7 @@ pytest --cov=openproject_config_manager --cov-report=html
 ```bash
 # By directory
 pytest testing/unit/
-pytest testing/integration/  
+pytest testing/integration/
 pytest testing/e2e/
 
 # By marker
@@ -73,10 +73,10 @@ pytest testing/unit/test_core_config.py::TestConfiguration::test_basic_config -v
 def test_component_behavior():
     # Arrange - Set up test data
     config = Configuration(...)
-    
+
     # Act - Execute the functionality
     result = config.validate()
-    
+
     # Assert - Verify the results
     assert result is True
     assert config.errors == []
@@ -105,7 +105,7 @@ def test_with_mock(mock_external):
 - **Mocking**: Heavy use of mocks
 - **Example**: Testing configuration validation logic
 
-### Integration Tests  
+### Integration Tests
 - **Focus**: Component interaction
 - **Speed**: 1-10 seconds
 - **Mocking**: Minimal, real components

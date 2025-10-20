@@ -21,7 +21,7 @@ The Deploy Manager handles OpenProject deployment operations:
 - **Absolute**: Required for all deployments
   - Docker runtime and Docker Compose
   - Shell utilities (bash, curl, etc.)
-  
+
 - **Ad-Hoc**: Context-dependent
   - SSL certificate tools (for HTTPS setups)
   - Cloud provider CLIs (for cloud deployments)
@@ -31,7 +31,7 @@ The Deploy Manager handles OpenProject deployment operations:
 - **Absolute**: Required for development
   - Git for version control
   - Text editors for configuration editing
-  
+
 - **Ad-Hoc**: Optional development tools
   - Linting tools for shell scripts
   - Testing frameworks for deployment validation

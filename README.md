@@ -2,6 +2,9 @@
 
 Deployment orchestration for Docker Compose stacks with health checking, rollback capabilities, and live validation.
 
+**Version**: 2.0.0
+**Dual-Mode Support**: Development & Production
+
 ## Features
 
 - **Deployment Orchestration**: Coordinate complete docker-compose lifecycle
@@ -10,6 +13,7 @@ Deployment orchestration for Docker Compose stacks with health checking, rollbac
 - **Preflight Validation**: Integrate with docker-prober-utility for pre-deployment checks
 - **Automatic Rollback**: Rollback on deployment failure with state snapshots
 - **Progress Monitoring**: Real-time deployment progress and logging
+- **Dual-Mode Operation**: Works in both development (git submodule) and production (pip package) environments
 
 ## Purpose
 
@@ -17,40 +21,104 @@ This is a generic, reusable deployment orchestration tool designed to work with 
 
 ## Installation
 
+### Production Mode (Pip Package)
+
 ```bash
 pip install openproject-deploy-manager
 ```
 
-Or install from source:
+### Development Mode (Git Submodule)
 
 ```bash
 git clone https://github.com/JustinCBates/openproject-deploy-manager.git
 cd openproject-deploy-manager
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 ## Usage
 
-### Basic Usage
+### Production Mode (Explicit Paths)
+
+When installed as a pip package and called by an orchestrator:
+
+```python
+from pathlib import Path
+from openproject_deploy_manager import DeploymentOrchestrator
+
+# Orchestrator provides paths
+deployer = DeploymentOrchestrator(
+    config={"domain": "example.com", "postgres_password": "secret123"},
+    templates_dir=Path("/opt/openproject/templates"),
+    output_dir=Path("/opt/openproject/outputs"),
+    compose_file=Path("/opt/openproject/docker-compose.yml"),
+    snapshot_dir=Path("/opt/openproject/backups/snapshots")
+)
+
+# Render templates
+result = deployer.render_templates()
+print(f"Rendered {result['files_rendered']} templates")
+
+# Create pre-deployment snapshot
+snapshot = deployer.create_snapshot("pre_deploy")
+
+# Execute deployment
+result = deployer.deploy()
+
+if result['status'] == 'success':
+    print(f"Deployment successful")
+else:
+    print(f"Deployment failed: {result.get('message')}")
+```
+
+### Development Mode (Auto-Detected)
+
+When running from git repository (development):
 
 ```python
 from openproject_deploy_manager import DeploymentOrchestrator
 
-# Deploy Docker Compose stack
-orchestrator = DeploymentOrchestrator(
-    config={"domain": "example.com", "port": "8080"},
-    compose_file="docker-compose.yml",
-    template_dir="templates/",
-    prober_enabled=True
+# Auto-detects development mode (uses local ./templates/ and ./outputs/)
+deployer = DeploymentOrchestrator(
+    config={"domain": "example.com", "port": "8080"}
 )
 
 # Execute deployment
-result = orchestrator.deploy(dry_run=False)
+result = deployer.deploy()
 
-if result.success:
-    print(f"Deployed {len(result.services_started)} services successfully")
+if result['status'] == 'success':
+    print(f"Deployment successful")
 else:
-    print(f"Deployment failed: {result.error_message}")
+    print(f"Deployment failed: {result.get('message')}")
+```
+
+### Force Development Mode
+
+```python
+# Explicitly force development mode
+deployer = DeploymentOrchestrator(
+    config=my_config,
+    use_local_paths=True
+)
+```
+
+Or via environment variable:
+
+```bash
+export OPENPROJECT_DEV_MODE=1
+```
+
+### Custom Paths in Development
+
+```python
+from pathlib import Path
+
+# Override default paths even in development mode
+deployer = DeploymentOrchestrator(
+    config=my_config,
+    templates_dir=Path("/custom/templates"),
+    output_dir=Path("/custom/outputs"),
+    use_local_paths=True
+)
 ```
 
 ### Command Line Interface
@@ -365,9 +433,17 @@ docker --version
 
 ### Testing
 
+Tests are organized by operation mode:
+
 ```bash
-# Run tests (requires Docker)
+# Run all tests (requires Docker)
 pytest
+
+# Test development mode
+pytest tests/test_development_mode.py -v
+
+# Test production mode
+pytest tests/test_production_mode.py -v
 
 # Run tests with coverage
 pytest --cov=openproject_deploy_manager --cov-report=term-missing
@@ -377,6 +453,121 @@ pytest tests/test_orchestrator.py
 
 # Skip Docker-dependent tests
 pytest -m "not docker"
+```
+
+## Environment Variables
+
+| Variable | Values | Effect |
+|----------|--------|--------|
+| `OPENPROJECT_DEV_MODE` | `1`, `true`, `yes` | Force development mode (use local paths) |
+
+**Examples**:
+
+```bash
+# Force development mode
+export OPENPROJECT_DEV_MODE=1
+python -c "from openproject_deploy_manager import DeploymentOrchestrator; d = DeploymentOrchestrator(config={})"
+# Uses ./templates/ and ./outputs/
+
+# Production mode (default when installed via pip)
+unset OPENPROJECT_DEV_MODE
+python -c "from openproject_deploy_manager import DeploymentOrchestrator; d = DeploymentOrchestrator(config={}, templates_dir='/opt/openproject/templates', output_dir='/opt/openproject/outputs')"
+# Uses /opt/openproject/templates/ and /opt/openproject/outputs/
+```
+
+## Mode Detection
+
+The Deployment Orchestrator auto-detects its operating mode:
+
+1. **Environment Variable Check**: If `OPENPROJECT_DEV_MODE=1`, use development mode
+2. **Git Repository Check**: If `.git` directory exists in parent paths, use development mode
+3. **Site-Packages Check**: If running from `site-packages/`, use production mode
+4. **Default**: Development mode
+
+**Override Detection**:
+
+```python
+# Force production mode even in development
+deployer = DeploymentOrchestrator(
+    config=my_config,
+    templates_dir=Path("/opt/openproject/templates"),
+    output_dir=Path("/opt/openproject/outputs"),
+    use_local_paths=False  # Explicitly disable auto-detection
+)
+
+# Force development mode even when installed
+deployer = DeploymentOrchestrator(
+    config=my_config,
+    use_local_paths=True
+)
+```
+
+## API Reference
+
+### DeploymentOrchestrator
+
+```python
+class DeploymentOrchestrator:
+    def __init__(
+        self,
+        config: Dict[str, Any],                      # Configuration dictionary
+        project_root: Optional[Path] = None,         # Legacy (deprecated)
+        templates_dir: Optional[Path] = None,        # Where to find templates
+        output_dir: Optional[Path] = None,           # Where to write rendered files
+        compose_file: Optional[Path] = None,         # docker-compose.yml path
+        snapshot_dir: Optional[Path] = None,         # Snapshot storage
+        config_file: Optional[Path] = None,          # Config file path
+        use_local_paths: Optional[bool] = None       # Force dev/prod mode
+    ):
+        """
+        Initialize Deployment Orchestrator.
+
+        Production Mode (paths required):
+            deployer = DeploymentOrchestrator(
+                config=cfg,
+                templates_dir=Path("/opt/openproject/templates"),
+                output_dir=Path("/opt/openproject/outputs")
+            )
+
+        Development Mode (auto-detected):
+            deployer = DeploymentOrchestrator(config=cfg)
+        """
+```
+
+### Methods
+
+```python
+def render_templates(self) -> Dict[str, Any]:
+    """
+    Render Jinja2 templates.
+
+    Returns:
+        Dict with:
+        - status: 'success' | 'error' | 'warning'
+        - files_rendered: int
+        - rendered_files: List[str]
+    """
+
+def create_snapshot(self, snapshot_name: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Create deployment snapshot.
+
+    Returns:
+        Dict with:
+        - status: 'success' | 'error'
+        - snapshot_name: str
+        - snapshot_path: str
+    """
+
+def deploy(self, dry_run: bool = False) -> Dict[str, Any]:
+    """
+    Execute deployment.
+
+    Returns:
+        Dict with:
+        - status: 'success' | 'error'
+        - message: str (if error)
+    """
 ```
 
 ### Code Quality
@@ -464,7 +655,7 @@ openproject-deploy-manager/
 server {
     listen {{ port }};
     server_name {{ domain }};
-    
+
     location / {
         proxy_pass http://backend:8080;
         proxy_set_header Host $host;

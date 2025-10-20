@@ -1,0 +1,27 @@
+# Docker Compose Override for {{ project_name }}
+# Auto-generated from template
+version: '3.8'
+
+services:
+{% for service_name, service_config in services.items() %}
+  {{ service_name }}:
+    environment:
+      - PROJECT_NAME={{ project_name }}
+      - ENVIRONMENT={{ environment }}
+{% if service_config.env is defined %}
+{% for key, value in service_config.env.items() %}
+      - {{ key }}={{ value }}
+{% endfor %}
+{% endif %}
+{% if service_config.port is defined %}
+    ports:
+      - "{{ service_config.port }}:{{ service_config.port }}"
+{% endif %}
+{% endfor %}
+
+{% if network is defined %}
+networks:
+  default:
+    name: {{ network.name | default(project_name + '-network') }}
+    driver: {{ network.mode | default('bridge') }}
+{% endif %}

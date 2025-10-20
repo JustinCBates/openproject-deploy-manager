@@ -34,7 +34,7 @@ sudo apt-get install docker.io docker-compose python3
 pip3 install -r requirements.txt
 ```
 
-### Development Environment  
+### Development Environment
 ```bash
 # Development tools
 sudo apt-get install git python3-pip

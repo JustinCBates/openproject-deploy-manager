@@ -1,0 +1,32 @@
+{
+  "deployment_status": {
+    "success": true,
+    "project_name": "test-app",
+    "environment": "staging",
+    "timestamp": "2025-10-15T22:29:35.233354",
+    "duration_seconds": 0
+  },
+  "phases": {
+    "completed": [],
+    "failed": [],
+    "total": 0
+  },
+  "services": {
+    "deployed": 0,
+    "healthy": 0,
+    "unhealthy": 0
+  },
+  "snapshot": {
+    "created": null,
+    "path": null
+  },
+  "health_checks": {},
+  "errors": [],
+  "warnings": [],
+  "artifacts": {
+    "env_file": null,
+    "caddyfile": null,
+    "compose_override": null,
+    "health_report": null
+  }
+}

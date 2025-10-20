@@ -1,0 +1,17 @@
+{
+  "id": "snap_test-app_20251015_213848",
+  "timestamp": "2025-10-15T21:38:48.318715",
+  "project_name": "test-app",
+  "containers": [],
+  "networks": [],
+  "volumes": [],
+  "config_files": [],
+  "backup_dir": null,
+  "metadata": {
+    "phase": "pre-deployment",
+    "container_count": 0,
+    "network_count": 0,
+    "volume_count": 0,
+    "config_file_count": 0
+  }
+}
